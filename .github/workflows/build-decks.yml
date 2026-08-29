@@ -1,0 +1,36 @@
+# .github/workflows/build-decks.yml
+# Runs the deck Builder every 10 minutes (and on-demand) from the company repo.
+name: Build site-update decks
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"      # every 10 minutes
+  workflow_dispatch:            # lets you run it by hand from the Actions tab
+
+# never let two runs overlap
+concurrency:
+  group: build-decks
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install libraries
+        run: pip install python-pptx==0.6.23 Pillow requests
+
+      - name: Update decks from inbox
+        env:
+          ZOHO_CLIENT_ID:     ${{ secrets.ZOHO_CLIENT_ID }}
+          ZOHO_CLIENT_SECRET: ${{ secrets.ZOHO_CLIENT_SECRET }}
+          ZOHO_REFRESH_TOKEN: ${{ secrets.ZOHO_REFRESH_TOKEN }}
+          LIVE_FOLDER:        ${{ secrets.LIVE_FOLDER }}
+          INBOX_FOLDER:       ${{ secrets.INBOX_FOLDER }}
+          PROCESSED_FOLDER:   ${{ secrets.PROCESSED_FOLDER }}
+        run: python runner.py
