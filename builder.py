@@ -16,12 +16,54 @@ import copy
 
 IN = 914400
 
-# form space value -> keyword found in the slide title "04 · ..."
-SPACE_KEY = {
-    "facade": "façade", "reception": "reception", "dining": "dining",
-    "banquet": "banquet", "guest room": "guest room", "bathroom": "bathroom",
-    "corridor": "corridor", "kitchen": "kitchen", "back of house": "back of house",
-    "electrical": "electrical", "stp": "stp", "fire": "fire",
+# Maps each form "space" onto one of the deck's 12 slides.
+# value = (keyword found in that slide's "04 · ..." title, variant-name-or-None)
+# Guest-room types carry a variant, so each becomes its own slide automatically.
+SPACE_MAP = {
+    # --- Building façade & main porch ---
+    "main entrance / porch": ("façade", None), "building exterior": ("façade", None),
+    "parking area": ("façade", None), "garden / landscaping": ("façade", None),
+    "driveway": ("façade", None), "boundary wall": ("façade", None),
+    "signage & branding": ("façade", None), "facade": ("façade", None),
+    "façade": ("façade", None),
+    # --- Reception & lobby ---
+    "lobby": ("reception", None), "reception / front desk": ("reception", None),
+    "waiting lounge": ("reception", None), "luggage area": ("reception", None),
+    "reception": ("reception", None),
+    # --- Guest floor corridor & lifts ---
+    "corridors (ground floor)": ("corridor", None), "corridors (upper floors)": ("corridor", None),
+    "elevators": ("corridor", None), "staircase": ("corridor", None),
+    "public restrooms": ("corridor", None), "corridor": ("corridor", None),
+    # --- All-day dining / restaurant ---
+    "restaurant (all day dining)": ("dining", None), "bar & lounge": ("dining", None),
+    "dining": ("dining", None),
+    # --- Banquet & conference ---
+    "banquet hall": ("banquet", None), "pre-function area": ("banquet", None),
+    "meeting / training room": ("banquet", None), "banquet": ("banquet", None),
+    # --- Main kitchen ---
+    "kitchen": ("kitchen", None), "room service area": ("kitchen", None),
+    "staff cafeteria": ("kitchen", None),
+    # --- Guest room (each type => its own slide via variant) ---
+    "standard room": ("guest room", "Standard Room"), "deluxe room": ("guest room", "Deluxe Room"),
+    "premium room": ("guest room", "Premium Room"), "junior suite": ("guest room", "Junior Suite"),
+    "suite": ("guest room", "Suite"), "balcony / terrace": ("guest room", None),
+    "guest room": ("guest room", None),
+    # --- Guest bathroom ---
+    "bathroom": ("bathroom", None), "toilet": ("bathroom", None),
+    # --- Back of house & stores ---
+    "laundry": ("back of house", None), "housekeeping store": ("back of house", None),
+    "staff locker room": ("back of house", None), "general storage": ("back of house", None),
+    "loading bay": ("back of house", None), "linen room": ("back of house", None),
+    "back of house": ("back of house", None),
+    # --- Electrical — transformer, DG & panel room ---
+    "main electrical room": ("electrical", None), "sub-electrical panels": ("electrical", None),
+    "generator room": ("electrical", None), "electrical": ("electrical", None),
+    # --- STP / WTP & plumbing ---
+    "plumbing / water treatment": ("stp", None), "hvac / chiller plant": ("stp", None),
+    "stp": ("stp", None),
+    # --- Fire & life safety ---
+    "fire safety systems": ("fire", None), "cctv / security room": ("fire", None),
+    "fire": ("fire", None),
 }
 
 def _txt(sh):
@@ -203,11 +245,17 @@ def clone_variant(prs, base_idx, variant):
     return new
 
 def find_space_slide(prs, space_value, variant=None):
-    key = SPACE_KEY.get(space_value.strip().lower(), space_value.strip().lower())
+    sv = (space_value or "").strip().lower()
+    mapped = SPACE_MAP.get(sv)
+    if mapped:
+        key, map_variant = mapped
+    else:
+        key, map_variant = sv, None      # fall back to matching the raw text
+    variant = variant or map_variant     # explicit room-type wins, else the mapped one
     matches = [(i, s) for i, s in enumerate(prs.slides)
                if _title(s) and key in _txt(_title(s)).lower()]
     if not matches:
-        return None
+        return None                      # space has no deck slide (media still saved)
     base_idx, base = matches[0]
     if not variant:
         return base
