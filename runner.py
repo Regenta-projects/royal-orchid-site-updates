@@ -36,33 +36,42 @@ def token():
         raise SystemExit(f"Zoho auth failed: {d}")
     return d["access_token"]
 
-def H(t):
+def B(t):  # Bearer — the style WorkDrive actually accepts here
+    return {"Authorization": f"Bearer {t}"}
+def Z(t):  # fallback
     return {"Authorization": f"Zoho-oauthtoken {t}", "Accept": "application/vnd.api+json"}
 
 # ---- WorkDrive helpers ------------------------------------------------------
 def list_files(t, folder_id):
-    r = requests.get(f"{WD}/files/{folder_id}/files?page%5Blimit%5D=200", headers=H(t), timeout=30)
-    return r.json().get("data", [])
+    for h in (B(t), Z(t)):
+        r = requests.get(f"{WD}/files/{folder_id}/files?page%5Blimit%5D=200", headers=h, timeout=30)
+        try:
+            d = r.json()
+        except Exception:
+            d = {}
+        if isinstance(d.get("data"), list):
+            return d["data"]
+    return []
 
 def download(t, file_id):
-    r = requests.get(f"{WD}/files/{file_id}/content",
-                     headers={"Authorization": f"Zoho-oauthtoken {t}"}, timeout=120)
-    r.raise_for_status()
-    return r.content
+    for h in (B(t), Z(t)):
+        r = requests.get(f"{WD}/files/{file_id}/content", headers=h, timeout=120)
+        if r.ok and len(r.content) > 50:
+            return r.content
+    raise RuntimeError(f"download failed for file {file_id}")
 
 def upload_version(t, parent_id, name, data, ctype):
     """Upload as a new version of the same-named file -> keeps its link stable."""
     files = {"content": (name, io.BytesIO(data), ctype)}
     dataf = {"parent_id": parent_id, "override-name-exist": "true"}
-    r = requests.post(f"{WD}/upload", headers={"Authorization": f"Zoho-oauthtoken {t}"},
-                      files=files, data=dataf, timeout=180)
+    r = requests.post(f"{WD}/upload", headers=B(t), files=files, data=dataf, timeout=180)
     r.raise_for_status()
     return r.json()
 
 def move_file(t, file_id, new_parent):
     try:
         requests.patch(f"{WD}/files/{file_id}",
-                       headers={**H(t), "Content-Type": "application/json"},
+                       headers={**B(t), "Content-Type": "application/json"},
                        json={"data": {"type": "files", "id": file_id,
                                       "attributes": {"parent_id": new_parent}}}, timeout=30)
     except Exception:
