@@ -54,10 +54,21 @@ def list_files(t, folder_id):
     return []
 
 def download(t, file_id):
-    for h in (B(t), Z(t)):
-        r = requests.get(f"{WD}/files/{file_id}/content", headers=h, timeout=120)
-        if r.ok and len(r.content) > 50:
-            return r.content
+    # WorkDrive's download endpoint varies; try the documented ones + fallbacks
+    urls = [
+        f"https://www.zohoapis.in/workdrive/api/v1/download/{file_id}",
+        f"https://workdrive.zoho.in/api/v1/download/{file_id}",
+        f"https://www.zohoapis.in/workdrive/api/v1/files/{file_id}/content",
+        f"{WD}/files/{file_id}/content",
+    ]
+    for url in urls:
+        for h in (B(t), Z(t)):
+            try:
+                r = requests.get(url, headers=h, timeout=120)
+            except Exception:
+                continue
+            if r.ok and len(r.content) > 20:
+                return r.content
     raise RuntimeError(f"download failed for file {file_id}")
 
 def upload_version(t, parent_id, name, data, ctype):
