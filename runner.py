@@ -36,14 +36,14 @@ def token():
         raise SystemExit(f"Zoho auth failed: {d}")
     return d["access_token"]
 
-def B(t):  # Bearer — the style WorkDrive actually accepts here
+def bearer(t):  # Bearer — the style WorkDrive actually accepts here
     return {"Authorization": f"Bearer {t}"}
-def Z(t):  # fallback
+def zoho(t):  # fallback
     return {"Authorization": f"Zoho-oauthtoken {t}", "Accept": "application/vnd.api+json"}
 
 # ---- WorkDrive helpers ------------------------------------------------------
 def list_files(t, folder_id):
-    for h in (B(t), Z(t)):
+    for h in (bearer(t), zoho(t)):
         r = requests.get(f"{WD}/files/{folder_id}/files?page%5Blimit%5D=200", headers=h, timeout=30)
         try:
             d = r.json()
@@ -62,7 +62,7 @@ def download(t, file_id):
         f"{WD}/files/{file_id}/content",
     ]
     for url in urls:
-        for h in (B(t), Z(t)):
+        for h in (bearer(t), zoho(t)):
             try:
                 r = requests.get(url, headers=h, timeout=120)
             except Exception:
@@ -75,14 +75,14 @@ def upload_version(t, parent_id, name, data, ctype):
     """Upload as a new version of the same-named file -> keeps its link stable."""
     files = {"content": (name, io.BytesIO(data), ctype)}
     dataf = {"parent_id": parent_id, "override-name-exist": "true"}
-    r = requests.post(f"{WD}/upload", headers=B(t), files=files, data=dataf, timeout=180)
+    r = requests.post(f"{WD}/upload", headers=bearer(t), files=files, data=dataf, timeout=180)
     r.raise_for_status()
     return r.json()
 
 def move_file(t, file_id, new_parent):
     try:
         requests.patch(f"{WD}/files/{file_id}",
-                       headers={**B(t), "Content-Type": "application/json"},
+                       headers={**bearer(t), "Content-Type": "application/json"},
                        json={"data": {"type": "files", "id": file_id,
                                       "attributes": {"parent_id": new_parent}}}, timeout=30)
     except Exception:
