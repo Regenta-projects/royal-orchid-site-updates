@@ -89,23 +89,26 @@ def move_file(t, file_id, new_parent):
         pass
 
 # ---- deck lookup by ROHL id -------------------------------------------------
-def find_deck(t, live_folder, rohl, hotel):
-    files = list_files(t, live_folder)
-    rl = (rohl or "").lower()
-    for f in files:
-        a = f.get("attributes", {})
-        name = (a.get("name") or "")
-        if a.get("is_folder"):
-            continue
-        if rl and name.lower().startswith(rl):
-            return f["id"], name
-    # fallback: match by hotel name fragment
+def find_deck(t, live_folder, rohl, hotel, city=""):
+    files = [f for f in list_files(t, live_folder) if not f.get("attributes", {}).get("is_folder")]
+    rl = (rohl or "").lower().strip()
+    # 1) exact ROHL id in the filename (most reliable)
+    if rl:
+        for f in files:
+            if (f.get("attributes", {}).get("name") or "").lower().startswith(rl):
+                return f["id"], f["attributes"]["name"]
+    # 2) city in the filename (e.g. "Jamshedpur") — unique per hotel, unlike the brand
+    cl = (city or "").lower().strip()
+    if cl:
+        for f in files:
+            if cl in (f.get("attributes", {}).get("name") or "").lower():
+                return f["id"], f["attributes"]["name"]
+    # 3) last resort: hotel brand fragment (may be ambiguous)
     hl = (hotel or "").lower().strip()
     if hl:
         for f in files:
-            a = f.get("attributes", {})
-            if not a.get("is_folder") and hl and hl in (a.get("name") or "").lower():
-                return f["id"], a.get("name")
+            if hl in (f.get("attributes", {}).get("name") or "").lower():
+                return f["id"], f["attributes"]["name"]
     return None, None
 
 def save_tmp(data, suffix):
@@ -117,8 +120,8 @@ def save_tmp(data, suffix):
 # ---- process one inbox record ----------------------------------------------
 def process(t, rec_file, live, processed):
     rec = json.loads(download(t, rec_file["id"]).decode("utf-8"))
-    rohl, hotel = rec.get("rohl", ""), rec.get("hotel", "")
-    deck_id, deck_name = find_deck(t, live, rohl, hotel)
+    rohl, hotel, city = rec.get("rohl", ""), rec.get("hotel", ""), rec.get("city", "")
+    deck_id, deck_name = find_deck(t, live, rohl, hotel, city)
     if not deck_id:
         print(f"  ! no deck for {rohl or hotel} — leaving in inbox")
         return False
