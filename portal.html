@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Royal Orchid — Site Management Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Jost:wght@300;400;500;600&display=swap">
+<style>
+  :root{
+    --burg:#5b1526; --burg2:#7a1f34; --gold:#c9a84c; --gold-soft:#e6d3a3;
+    --cream:#faf6f0; --card:#ffffff; --ink:#2a1a20; --muted:#8a7a80; --line:#ecdfe4;
+    --navy:#17365d; --blue:#2f75b5; --green:#2e7d52;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Jost',-apple-system,'Segoe UI',sans-serif;background:var(--cream);color:var(--ink);
+       min-height:100vh;display:flex;flex-direction:column;-webkit-font-smoothing:antialiased}
+  a{text-decoration:none;color:inherit}
+
+  header{background:linear-gradient(135deg,var(--burg) 0%,var(--burg2) 100%);
+         padding:22px 20px 20px;text-align:center;box-shadow:0 2px 18px rgba(91,21,38,.25)}
+  header .brand{font-family:'Playfair Display',serif;color:var(--gold);font-size:26px;font-weight:700;letter-spacing:.01em}
+  header .sub{color:rgba(255,255,255,.75);font-size:11px;font-weight:500;letter-spacing:.22em;
+              text-transform:uppercase;margin-top:4px}
+
+  main{flex:1;display:flex;flex-direction:column;align-items:center;padding:26px 18px 40px}
+  .wrap{width:100%;max-width:500px}
+
+  .hotel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 24px 22px;
+         box-shadow:0 4px 26px rgba(91,21,38,.06);margin-bottom:22px;position:relative;overflow:hidden}
+  .hotel::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;
+                 background:linear-gradient(90deg,var(--gold),var(--gold-soft))}
+  .hotel .ey{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:8px}
+  .hotel h1{font-family:'Playfair Display',serif;font-size:26px;line-height:1.15;color:var(--burg);font-weight:700}
+  .hotel .loc{margin-top:6px;color:var(--muted);font-size:14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .hotel .pill{background:#f4ecec;color:var(--burg);border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;letter-spacing:.04em}
+
+  .lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 4px 12px}
+
+  .card{display:flex;align-items:center;gap:15px;width:100%;background:var(--card);border:1px solid var(--line);
+        border-radius:15px;padding:17px 18px;margin-bottom:13px;transition:transform .14s,box-shadow .14s,border-color .14s;
+        box-shadow:0 2px 10px rgba(91,21,38,.04)}
+  .card:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(91,21,38,.12)}
+  .card .ic{width:46px;height:46px;border-radius:12px;flex:none;display:flex;align-items:center;justify-content:center;font-size:22px}
+  .card .tx{flex:1;min-width:0}
+  .card .tt{font-size:16px;font-weight:600;line-height:1.25;color:var(--ink)}
+  .card .ss{font-size:12.5px;color:var(--muted);margin-top:3px;font-weight:300}
+  .card .ar{font-size:20px;color:var(--gold);opacity:.7;flex:none}
+
+  .card.primary{background:linear-gradient(135deg,var(--burg) 0%,var(--burg2) 100%);border-color:transparent}
+  .card.primary .tt{color:#fff}.card.primary .ss{color:rgba(255,255,255,.72)}
+  .card.primary .ic{background:rgba(255,255,255,.14)}.card.primary .ar{color:var(--gold-soft);opacity:1}
+  .ic.ppt{background:rgba(47,117,181,.12)} .ic.sch{background:rgba(46,125,82,.12)} .ic.folder{background:rgba(201,168,76,.16)}
+
+  .card.soon{opacity:.6;pointer-events:none;filter:grayscale(.25)}
+  .tag{font-size:9px;background:#fff5df;border:1px solid var(--gold-soft);color:#8a6d1e;border-radius:5px;
+       padding:2px 6px;margin-left:7px;vertical-align:middle;font-weight:600;letter-spacing:.03em}
+
+  .picker{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 22px;text-align:center;
+          box-shadow:0 4px 26px rgba(91,21,38,.06)}
+  .picker h2{font-family:'Playfair Display',serif;color:var(--burg);font-size:20px;margin-bottom:6px}
+  .picker p{color:var(--muted);font-size:13.5px;margin-bottom:18px}
+  select{width:100%;padding:13px 14px;border:1.5px solid var(--line);border-radius:11px;font-size:15px;
+         font-family:inherit;color:var(--ink);background:#fff}
+
+  footer{text-align:center;padding:16px;font-size:11px;color:var(--muted);letter-spacing:.05em}
+  footer b{color:var(--burg)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Royal Orchid</div>
+  <div class="sub">Site Management Portal</div>
+</header>
+
+<main><div class="wrap" id="app"></div></main>
+
+<footer>Royal Orchid Hotels Ltd &nbsp;·&nbsp; <b>Projects &amp; Technical Services</b></footer>
+
+<script>
+// ============================================================================
+//  HOTELS — all 49 (id · name · city). The form works for every one of these.
+// ============================================================================
+const HOTELS = [
+  {id:"ROHL-0001", name:"Regenta Inn / Z", city:"Tezpur"},
+  {id:"ROHL-0002", name:"Regenta", city:"Jamshedpur"},
+  {id:"ROHL-0003", name:"Regenta", city:"Mussoorie"},
+  {id:"ROHL-0004", name:"Regenta Place", city:"Mall Road, Mussoorie"},
+  {id:"ROHL-0005", name:"Regenta Place", city:"Jim Corbett"},
+  {id:"ROHL-0006", name:"Regenta Z", city:"Orai"},
+  {id:"ROHL-0007", name:"Regenta Resort", city:"Pushkar"},
+  {id:"ROHL-0008", name:"Crestoria", city:"Bhopal"},
+  {id:"ROHL-0009", name:"Regenta Resort", city:"Chittorgarh"},
+  {id:"ROHL-0010", name:"Regenta", city:"Bhopal Airport"},
+  {id:"ROHL-0011", name:"Regenta", city:"Jabalpur"},
+  {id:"ROHL-0012", name:"Regenta", city:"Gwalior"},
+  {id:"ROHL-0013", name:"Crestoria", city:"Jodhpur"},
+  {id:"ROHL-0014", name:"Regenta Place", city:"Udaipur"},
+  {id:"ROHL-0015", name:"Regenta Suites & Residences", city:"Jaipur"},
+  {id:"ROHL-0016", name:"Regenta Place, Aerodrome Circle", city:"Kota"},
+  {id:"ROHL-0017", name:"Regenta Kota", city:"Kota"},
+  {id:"ROHL-0018", name:"Regenta Resort Kota", city:"Kota"},
+  {id:"ROHL-0019", name:"Regenta Place", city:"Baddi"},
+  {id:"ROHL-0020", name:"Regenta Z", city:"Ambala"},
+  {id:"ROHL-0021", name:"Regenta", city:"Ambala"},
+  {id:"ROHL-0022", name:"Regenta Place", city:"Bhadohi"},
+  {id:"ROHL-0023", name:"Regenta Place", city:"Vrindavan"},
+  {id:"ROHL-0024", name:"Regenta Z", city:"Mathura"},
+  {id:"ROHL-0025", name:"Regenta", city:"Varanasi"},
+  {id:"ROHL-0026", name:"Regenta", city:"Bathinda"},
+  {id:"ROHL-0027", name:"Regenta Z", city:"Vijayawada"},
+  {id:"ROHL-0028", name:"Regenta Resort", city:"Kushal Nagar, Coorg"},
+  {id:"ROHL-0029", name:"Regenta Z", city:"Visakhapatnam"},
+  {id:"ROHL-0030", name:"Regenta Royal Ritis", city:"Hubballi"},
+  {id:"ROHL-0031", name:"Regenta", city:"Vellore"},
+  {id:"ROHL-0032", name:"Regenta Place / Z by Regenta", city:"Kadapa"},
+  {id:"ROHL-0033", name:"Regenta Inn / Z", city:"Dhule"},
+  {id:"ROHL-0034", name:"Regenta", city:"Nanded"},
+  {id:"ROHL-0035", name:"Regenta Resort", city:"Mulshi, Pune"},
+  {id:"ROHL-0036", name:"Regenta Resort", city:"Panchgani"},
+  {id:"ROHL-0037", name:"Regenta Z", city:"Mahabaleshwar"},
+  {id:"ROHL-0038", name:"Regenta Residences", city:"Trimbakeshwar"},
+  {id:"ROHL-0039", name:"Regenta Place", city:"Omerga"},
+  {id:"ROHL-0040", name:"Regenta Z", city:"Ichalkaranji"},
+  {id:"ROHL-0041", name:"Regenta Place", city:"Sangli"},
+  {id:"ROHL-0042", name:"Regenta Resort", city:"Sasan Gir"},
+  {id:"ROHL-0043", name:"Regenta", city:"Rajkot"},
+  {id:"ROHL-0044", name:"Regenta Resort", city:"Bhavnagar"},
+  {id:"ROHL-0045", name:"Regenta Inn", city:"Anjar"},
+  {id:"ROHL-0046", name:"Regenta Place", city:"Rajkot \u2013 Greenland Chowkdi"},
+  {id:"ROHL-0047", name:"Regenta", city:"Mundra"},
+  {id:"ROHL-0048", name:"Regenta Resort", city:"Saputara"},
+  {id:"ROHL-0049", name:"Regenta Place", city:"Nana Chiloda"}
+];
+
+// ============================================================================
+//  LINKS you add over time — keyed by ROHL ID.  Paste a hotel's link here and
+//  its button turns live automatically.  Leave blank = shows "coming soon".
+//
+//  PRESENTATION = the auto-updated site deck (WorkDrive share link).
+//  SCHEDULE     = future project-schedule / Gantt link.
+//  To add a WHOLE NEW link type later, copy the pattern in ACTIONS below.
+// ============================================================================
+const PRESENTATION = {
+  // "ROHL-0002": "https://workdrive.zoho.in/....(Jamshedpur deck link)....",
+};
+const SCHEDULE = {
+  // "ROHL-0002": "https://....(project schedule link)....",
+};
+
+// Base URL of the site-update form (same GitHub Pages site)
+const FORM_BASE = "index.html";
+
+// ---- action buttons, in display order (easy to extend) ---------------------
+function ACTIONS(h){
+  return [
+    { key:"form", cls:"primary", ic:"📝", icCls:"",
+      title:"Submit Site Update",
+      sub:"Add this month's photos, videos &amp; progress",
+      url:`${FORM_BASE}?projectId=${encodeURIComponent(h.id)}&hotel=${encodeURIComponent(h.name)}`,
+      newtab:false },
+    { key:"ppt", ic:"📊", icCls:"ppt",
+      title:"Submitted Presentation",
+      sub:"View the latest auto-updated site deck",
+      url:(PRESENTATION[h.id]||""), newtab:true,
+      soonText:"Will appear once the deck is linked" },
+    { key:"sch", ic:"📅", icCls:"sch",
+      title:"Project Schedule",
+      sub:"Gantt chart &amp; milestone tracker",
+      url:(SCHEDULE[h.id]||""), newtab:true,
+      soonText:"Coming soon" },
+  ];
+}
+
+function qp(name){ return new URLSearchParams(location.search).get(name); }
+
+function findHotel(){
+  const id=(qp("id")||qp("projectId")||"").trim().toUpperCase();
+  if(id){ const h=HOTELS.find(x=>x.id.toUpperCase()===id); if(h) return h; }
+  const hn=(qp("hotel")||"").trim().toLowerCase();
+  const cy=(qp("city")||"").trim().toLowerCase();
+  if(cy){ const h=HOTELS.find(x=>x.city.toLowerCase()===cy); if(h) return h; }
+  if(hn){ const h=HOTELS.find(x=>x.name.toLowerCase()===hn); if(h) return h; }
+  return null;
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function renderHotel(h){
+  const cards = ACTIONS(h).map(a=>{
+    const live = !!a.url;
+    const inner = `
+      <div class="ic ${a.icCls}">${a.ic}</div>
+      <div class="tx">
+        <div class="tt">${a.title}${live?"":`<span class="tag">${a.soonText||"Coming soon"}</span>`}</div>
+        <div class="ss">${a.sub}</div>
+      </div>
+      <div class="ar">›</div>`;
+    if(live){
+      const tgt=a.newtab?' target="_blank" rel="noopener"':'';
+      return `<a class="card ${a.cls||""}" href="${esc(a.url)}"${tgt}>${inner}</a>`;
+    }
+    return `<div class="card ${a.cls||""} soon">${inner}</div>`;
+  }).join("");
+
+  document.getElementById("app").innerHTML = `
+    <div class="hotel">
+      <div class="ey">Site Portal</div>
+      <h1>${esc(h.name)}</h1>
+      <div class="loc">📍 ${esc(h.city)} <span class="pill">${esc(h.id)}</span></div>
+    </div>
+    <div class="lbl">Quick Actions</div>
+    ${cards}`;
+}
+
+function renderPicker(){
+  const opts = HOTELS.map(h=>`<option value="${esc(h.id)}">${esc(h.id)} — ${esc(h.name)}, ${esc(h.city)}</option>`).join("");
+  document.getElementById("app").innerHTML = `
+    <div class="picker">
+      <h2>Select a hotel</h2>
+      <p>Open this portal with <code>?id=ROHL-####</code>, or pick a hotel below.</p>
+      <select onchange="if(this.value)location.search='?id='+this.value">
+        <option value="">— Choose a hotel —</option>${opts}
+      </select>
+    </div>`;
+}
+
+const h=findHotel();
+h ? renderHotel(h) : renderPicker();
+</script>
+</body>
+</html>
