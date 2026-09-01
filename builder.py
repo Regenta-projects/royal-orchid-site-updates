@@ -1,71 +1,82 @@
 """
-ROHL Site-Update Builder engine.
-Opens a hotel's template .pptx and applies a site submission:
-  - current photo -> CURRENT MONTH box (last month auto-rotates to PREVIOUS)
-  - render image  -> RENDERED box (only on 3-column space slides)
-  - up to 3 tappable video links (walkthrough / detail / snag)
-  - feedback text + site-visit date footer
-  - optional room-type variant -> clones the space slide on first sight
-Auto-detects 3-column vs 2-column layouts. Locates zones by label/geometry,
-never by fragile shape ids.
+ROHL Site-Update Builder — dynamic per-space slides + calendar-month rotation.
+
+Model:
+  * The deck starts lean (cover + intro slides + feedback). No space slides.
+  * Each submitted space gets its OWN slide, created on first submission by
+    cloning the matching design prototype (3-column for guest-facing areas,
+    2-column for back-of-house/technical). Only filled spaces ever appear.
+  * Empty leftover space slides are removed automatically.
+  * Slides are kept grouped/ordered by area.
+  * Rotation is by CALENDAR MONTH: filling a space again in the same month
+    just replaces the current photo; a new month pushes the current photo to
+    PREVIOUS and shows the new one as CURRENT. Column headers show real months.
+
+Per-slide state (area / space / current-month) is stored in the slide NOTES,
+which never show in the deck.
 """
 from pptx import Presentation
 from pptx.util import Emu
+from pptx.oxml.ns import qn
 from PIL import Image
-import copy
+import copy, calendar, re, os
 
 IN = 914400
+HERE = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE_PATH = os.path.join(HERE, "space_templates.pptx")
 
-# Maps each form "space" onto one of the deck's 12 slides.
-# value = (keyword found in that slide's "04 · ..." title, variant-name-or-None)
-# Guest-room types carry a variant, so each becomes its own slide automatically.
-SPACE_MAP = {
-    # --- Building façade & main porch ---
-    "main entrance / porch": ("façade", None), "building exterior": ("façade", None),
-    "parking area": ("façade", None), "garden / landscaping": ("façade", None),
-    "driveway": ("façade", None), "boundary wall": ("façade", None),
-    "signage & branding": ("façade", None), "facade": ("façade", None),
-    "façade": ("façade", None),
-    # --- Reception & lobby ---
-    "lobby": ("reception", None), "reception / front desk": ("reception", None),
-    "waiting lounge": ("reception", None), "luggage area": ("reception", None),
-    "reception": ("reception", None),
-    # --- Guest floor corridor & lifts ---
-    "corridors (ground floor)": ("corridor", None), "corridors (upper floors)": ("corridor", None),
-    "elevators": ("corridor", None), "staircase": ("corridor", None),
-    "public restrooms": ("corridor", None), "corridor": ("corridor", None),
-    # --- All-day dining / restaurant ---
-    "restaurant (all day dining)": ("dining", None), "bar & lounge": ("dining", None),
-    "dining": ("dining", None),
-    # --- Banquet & conference ---
-    "banquet hall": ("banquet", None), "pre-function area": ("banquet", None),
-    "meeting / training room": ("banquet", None), "banquet": ("banquet", None),
-    # --- Main kitchen ---
-    "kitchen": ("kitchen", None), "room service area": ("kitchen", None),
-    "staff cafeteria": ("kitchen", None),
-    # --- Guest room (each type => its own slide via variant) ---
-    "standard room": ("guest room", "Standard Room"), "deluxe room": ("guest room", "Deluxe Room"),
-    "premium room": ("guest room", "Premium Room"), "junior suite": ("guest room", "Junior Suite"),
-    "suite": ("guest room", "Suite"), "balcony / terrace": ("guest room", None),
-    "guest room": ("guest room", None),
-    # --- Guest bathroom ---
-    "bathroom": ("bathroom", None), "toilet": ("bathroom", None),
-    # --- Back of house & stores ---
-    "laundry": ("back of house", None), "housekeeping store": ("back of house", None),
-    "staff locker room": ("back of house", None), "general storage": ("back of house", None),
-    "loading bay": ("back of house", None), "linen room": ("back of house", None),
-    "back of house": ("back of house", None),
-    # --- Electrical — transformer, DG & panel room ---
-    "main electrical room": ("electrical", None), "sub-electrical panels": ("electrical", None),
-    "generator room": ("electrical", None), "electrical": ("electrical", None),
-    # --- STP / WTP & plumbing ---
-    "plumbing / water treatment": ("stp", None), "hvac / chiller plant": ("stp", None),
-    "stp": ("stp", None),
-    # --- Fire & life safety ---
-    "fire safety systems": ("fire", None), "cctv / security room": ("fire", None),
-    "fire": ("fire", None),
+# ---- form structure: area -> ordered spaces (drives grouping + order) --------
+FORM = {
+    "External & Facade": ["Main Entrance / Porch", "Building Exterior", "Parking Area",
+                          "Garden / Landscaping", "Driveway", "Boundary Wall", "Signage & Branding"],
+    "Public Areas": ["Lobby", "Reception / Front Desk", "Waiting Lounge", "Corridors (Ground Floor)",
+                     "Corridors (Upper Floors)", "Elevators", "Staircase", "Public Restrooms", "Luggage Area"],
+    "Guest Rooms & Suites": ["Standard Room", "Deluxe Room", "Premium Room", "Junior Suite",
+                             "Suite", "Bathroom", "Toilet", "Balcony / Terrace"],
+    "F&B Support": ["Restaurant (All Day Dining)", "Bar & Lounge", "Banquet Hall", "Pre-Function Area",
+                    "Kitchen", "Room Service Area", "Staff Cafeteria"],
+    "Wellness & Recreation": ["Swimming Pool", "Pool Deck", "Gym / Fitness Center", "Spa Reception",
+                              "Spa Treatment Rooms", "Steam & Sauna", "Kids Play Area"],
+    "Back of House": ["Laundry", "Housekeeping Store", "Staff Locker Room", "General Storage",
+                      "Loading Bay", "Linen Room"],
+    "Administrative": ["Front Office", "General Manager Office", "HR Room", "Meeting / Training Room", "Finance Office"],
+    "Service & Technical": ["Main Electrical Room", "Sub-Electrical Panels", "Plumbing / Water Treatment",
+                            "HVAC / Chiller Plant", "Generator Room", "Fire Safety Systems", "CCTV / Security Room"],
 }
+AREA_LIST = list(FORM.keys())
+# guest-facing areas get the 3-column layout (with a design-render column)
+THREE_COL_AREAS = {"external & facade", "public areas", "guest rooms & suites",
+                   "f&b support", "wellness & recreation"}
 
+def _norm(s):
+    return re.sub(r"\s+", " ", (s or "")).strip().lower()
+
+def area_of_space(space):
+    ns = _norm(space)
+    for area, spaces in FORM.items():
+        for sp in spaces:
+            if _norm(sp) == ns:
+                return area
+    return ""
+
+def order_key(area, space):
+    a = next((i for i, x in enumerate(AREA_LIST) if _norm(x) == _norm(area)), 99)
+    spaces = FORM.get(next((x for x in AREA_LIST if _norm(x) == _norm(area)), ""), [])
+    s = next((i for i, x in enumerate(spaces) if _norm(x) == _norm(space)), 99)
+    return (a, s)
+
+def layout_for(area, space):
+    a = area or area_of_space(space)
+    return "3col" if _norm(a) in THREE_COL_AREAS else "2col"
+
+def fmt_month(key):           # "2026-08" -> "AUG 2026"
+    try:
+        y, m = key.split("-")
+        return f"{calendar.month_abbr[int(m)].upper()} {y}"
+    except Exception:
+        return key or ""
+
+# ---- small shape helpers -----------------------------------------------------
 def _txt(sh):
     return sh.text_frame.text.strip() if sh.has_text_frame else ""
 
@@ -88,42 +99,73 @@ def _img_size(path):
     with Image.open(path) as im:
         return im.size
 
-# ---- slide / column discovery -------------------------------------------------
+# ---- per-slide state, stored in an OFF-CANVAS marker textbox (never visible) --
+def _meta_shape(slide, create=False):
+    for sh in slide.shapes:
+        if sh.name == "SPACEMETA":
+            return sh
+    if create:
+        tb = slide.shapes.add_textbox(Emu(-2500000), Emu(0), Emu(500000), Emu(300000))
+        tb.name = "SPACEMETA"
+        return tb
+    return None
 
-def _title(slide):
+def get_meta(slide):
+    meta = {}
+    sh = _meta_shape(slide)
+    if sh is not None:
+        for line in sh.text_frame.text.splitlines():
+            if "=" in line:
+                k, v = line.split("=", 1)
+                meta[k.strip()] = v.strip()
+    return meta
+
+def set_meta(slide, **kw):
+    meta = get_meta(slide)
+    meta.update({k: v for k, v in kw.items() if v is not None})
+    _meta_shape(slide, create=True).text_frame.text = "\n".join(f"{k}={v}" for k, v in meta.items())
+
+# ---- title / subtitle --------------------------------------------------------
+def _title_shape(slide):
     for sh in slide.shapes:
         if _txt(sh).startswith("04 ·"):
             return sh
     return None
 
-def _subtitle(slide):
-    # the descriptive line under the title (Text 2), first small text below title
-    t = _title(slide)
+def _subtitle_shape(slide):
+    t = _title_shape(slide)
     if not t:
         return None
-    cands = [sh for sh in slide.shapes
-             if sh.has_text_frame and sh is not t and sh.top > t.top
-             and abs(sh.left - t.left) < 0.5 * IN and sh.top < 1.5 * IN]
+    cands = [sh for sh in slide.shapes if sh.has_text_frame and sh is not t
+             and sh.top > t.top and abs(sh.left - t.left) < 0.6 * IN and sh.top < 1.6 * IN]
     return min(cands, key=lambda s: s.top) if cands else None
 
+def slide_is_space(slide):
+    return _title_shape(slide) is not None
+
+# ---- columns / boxes ---------------------------------------------------------
 def find_columns(slide):
-    """Return {'RENDER'|'PREV'|'CUR': box_shape} by matching labels to tall rects."""
     label_cx = {}
     for sh in slide.shapes:
         t = _txt(sh)
-        if t == "RENDERED — DESIGN INTENT": label_cx["RENDER"] = _cx(sh)
-        elif t == "PREVIOUS MONTH": label_cx["PREV"] = _cx(sh)
-        elif t == "CURRENT MONTH": label_cx["CUR"] = _cx(sh)
+        if t.startswith("RENDERED"): label_cx["RENDER"] = _cx(sh)
+        elif t.startswith("PREVIOUS"): label_cx["PREV"] = _cx(sh)
+        elif t.startswith("CURRENT"): label_cx["CUR"] = _cx(sh)
     rects = [sh for sh in slide.shapes
-             if sh.width and sh.height and sh.height > 4 * IN and sh.width > 3 * IN
-             and not _txt(sh)]
+             if sh.width and sh.height and sh.height > 4 * IN and sh.width > 3 * IN and not _txt(sh)]
     cols = {}
     for key, cx in label_cx.items():
-        cols[key] = min(rects, key=lambda r: abs(_cx(r) - cx))
+        if rects:
+            cols[key] = min(rects, key=lambda r: abs(_cx(r) - cx))
     return cols
 
+def _label_shape(slide, prefix):
+    for sh in slide.shapes:
+        if _txt(sh).startswith(prefix):
+            return sh
+    return None
+
 def _placeholder_in(slide, box):
-    """The 'Photograph awaited' text centred inside a box (may be blank after fill)."""
     for sh in slide.shapes:
         if not sh.has_text_frame or sh.height > 1.2 * IN:
             continue
@@ -137,9 +179,7 @@ def _fit(box, iw, ih, inset=0.06 * IN):
     bw, bh = box.width - 2 * inset, box.height - 2 * inset
     s = min(bw / iw, bh / ih)
     nw, nh = iw * s, ih * s
-    x = box.left + inset + (bw - nw) / 2
-    y = box.top + inset + (bh - nh) / 2
-    return int(x), int(y), int(nw), int(nh)
+    return int(box.left + inset + (bw - nw) / 2), int(box.top + inset + (bh - nh) / 2), int(nw), int(nh)
 
 def _find_pic(slide, name):
     for sh in slide.shapes:
@@ -157,24 +197,63 @@ def _place(slide, box, image_path, name):
         _set_text(ph, "")
     return pic
 
-# ---- the update actions -------------------------------------------------------
+def _has_photo(slide):
+    return any(_find_pic(slide, n) is not None for n in ("CURIMG", "PREVIMG", "RENDERIMG"))
 
-def set_current_photo(slide, cols, photo_path):
-    # rotate existing current -> previous
-    if "PREV" in cols:
+# ---- clone a prototype into the hotel deck -----------------------------------
+_TEMPLATE = None
+def _template():
+    global _TEMPLATE
+    if _TEMPLATE is None:
+        _TEMPLATE = Presentation(TEMPLATE_PATH)
+    return _TEMPLATE
+
+def clone_space_slide(prs, layout):
+    proto = _template().slides[0 if layout == "3col" else 1]
+    new = prs.slides.add_slide(prs.slides[0].slide_layout)
+    for sh in list(new.shapes):
+        sh._element.getparent().remove(sh._element)
+    for sh in proto.shapes:
+        new.shapes._spTree.append(copy.deepcopy(sh._element))
+    return new
+
+def _replace_text_everywhere(slide, mapping):
+    for sh in slide.shapes:
+        if not sh.has_text_frame:
+            continue
+        for para in sh.text_frame.paragraphs:
+            for run in para.runs:
+                for a, b in mapping.items():
+                    if a and a in run.text:
+                        run.text = run.text.replace(a, b)
+
+# ---- update actions ----------------------------------------------------------
+def set_current_photo(slide, cols, photo_path, month_key):
+    stored = get_meta(slide).get("curmonth", "")
+    cur = _find_pic(slide, "CURIMG")
+    if cur is not None and stored and stored != month_key and "PREV" in cols:
+        # new month -> rotate current into previous
         old_prev = _find_pic(slide, "PREVIMG")
         if old_prev is not None:
             old_prev._element.getparent().remove(old_prev._element)
-        cur = _find_pic(slide, "CURIMG")
-        if cur is not None:
-            box = cols["PREV"]
-            x, y, w, h = _fit(box, cur.width, cur.height)
-            cur.left, cur.top, cur.width, cur.height = Emu(x), Emu(y), Emu(w), Emu(h)
-            cur.name = "PREVIMG"
-            ph = _placeholder_in(slide, box)
-            if ph is not None:
-                _set_text(ph, "")
+        box = cols["PREV"]
+        x, y, w, h = _fit(box, cur.width, cur.height)
+        cur.left, cur.top, cur.width, cur.height = Emu(x), Emu(y), Emu(w), Emu(h)
+        cur.name = "PREVIMG"
+        ph = _placeholder_in(slide, box)
+        if ph is not None:
+            _set_text(ph, "")
+        prev_lbl = _label_shape(slide, "PREVIOUS")
+        if prev_lbl is not None:
+            _set_text(prev_lbl, f"PREVIOUS · {fmt_month(stored)}")
+    elif cur is not None and stored == month_key:
+        # same month -> replace current photo, no rotation
+        cur._element.getparent().remove(cur._element)
     _place(slide, cols["CUR"], photo_path, "CURIMG")
+    cur_lbl = _label_shape(slide, "CURRENT")
+    if cur_lbl is not None:
+        _set_text(cur_lbl, f"CURRENT · {fmt_month(month_key)}")
+    set_meta(slide, curmonth=month_key)
 
 def set_render(slide, cols, render_path):
     if "RENDER" not in cols or not render_path:
@@ -185,18 +264,17 @@ def set_render(slide, cols, render_path):
     _place(slide, cols["RENDER"], render_path, "RENDERIMG")
 
 def set_videos(slide, videos):
-    cells = [sh for sh in slide.shapes
-             if sh.has_text_frame and abs(sh.left - 2.87 * IN) < 0.35 * IN
-             and 8.2 * IN < sh.top < 9.7 * IN]
-    cells.sort(key=lambda s: s.top)  # walkthrough, detail, snag
+    cells = [sh for sh in slide.shapes if sh.has_text_frame
+             and abs(sh.left - 2.87 * IN) < 0.35 * IN and 8.2 * IN < sh.top < 9.7 * IN]
+    cells.sort(key=lambda s: s.top)
     for cell, key in zip(cells, ("walkthrough", "detail", "snag")):
-        url = videos.get(key)
+        url = (videos or {}).get(key)
         if url:
             _set_text(cell, "Watch ▶", hyperlink=url)
 
 def set_feedback(slide, text):
-    lab = next((sh for sh in slide.shapes if _txt(sh) == "FEEDBACK FOR THIS SPACE"), None)
-    if not lab:
+    lab = _label_shape(slide, "FEEDBACK FOR THIS SPACE")
+    if not lab or not text:
         return
     cands = [sh for sh in slide.shapes if sh.has_text_frame and sh is not lab
              and abs(sh.left - lab.left) < 1 * IN and sh.top > lab.top]
@@ -209,78 +287,77 @@ def set_footer(slide, date_str):
             _set_text(sh, f"Last site visit: {date_str}   ·   Updated automatically from site form")
             return
 
-# ---- room-type variants -------------------------------------------------------
+# ---- housekeeping ------------------------------------------------------------
+def strip_empty_space_slides(prs):
+    """Fully delete any space slide that has no photo yet (e.g. the original blanks)."""
+    sldIdLst = prs.slides._sldIdLst
+    for slide, sid in list(zip(prs.slides, list(sldIdLst))):
+        if slide_is_space(slide) and not _has_photo(slide):
+            rId = sid.get(qn("r:id"))
+            if rId:
+                prs.part.drop_rel(rId)
+            sldIdLst.remove(sid)
 
-def _reset_media(slide, cols):
-    for pic_name in ("CURIMG", "PREVIMG", "RENDERIMG"):
-        p = _find_pic(slide, pic_name)
-        if p is not None:
-            p._element.getparent().remove(p._element)
-    for key, box in cols.items():
-        ph = _placeholder_in(slide, box)
-        if ph is not None:
-            _set_text(ph, "Photograph awaited")
+def reorder_space_slides(prs):
+    """Group space slides by area/space order, placed before the feedback slide."""
+    sldIdLst = prs.slides._sldIdLst
+    pairs = list(zip(prs.slides, list(sldIdLst)))
+    space, feedback = [], None
+    for slide, sid in pairs:
+        t = _title_shape(slide)
+        if t is not None:
+            m = get_meta(slide)
+            space.append((order_key(m.get("area", ""), m.get("space", _txt(t)[5:])), sid))
+        elif "Feedback" in " ".join(_txt(s) for s in slide.shapes):
+            feedback = sid
+    for _, sid in space:
+        sldIdLst.remove(sid)
+    space.sort(key=lambda x: x[0])
+    ids_now = list(sldIdLst)
+    at = ids_now.index(feedback) if feedback in ids_now else len(ids_now)
+    for off, (_, sid) in enumerate(space):
+        sldIdLst.insert(at + off, sid)
 
-def clone_variant(prs, base_idx, variant):
-    src = prs.slides[base_idx]
-    new = prs.slides.add_slide(src.slide_layout)
-    for sh in list(new.shapes):
-        sh._element.getparent().remove(sh._element)
-    for sh in src.shapes:
-        new.shapes._spTree.append(copy.deepcopy(sh._element))
-    # relabel: title base keeps the space, subtitle carries the variant
-    t = _title(new)
-    if t:
-        base = _txt(t).split("—")[0].rstrip(" -")   # "04 · Guest room"
-        _set_text(t, f"{base} — {variant}")
-    sub = _subtitle(new)
-    if sub:
-        _set_text(sub, f"{variant}  ·  site update")
-    _reset_media(new, find_columns(new))
-    # move newly-added (last) slide to just after the base slide's section
-    ids = prs.slides._sldIdLst
-    moved = list(ids)[-1]
-    ids.remove(moved)
-    ids.insert(base_idx + 1, moved)
-    return new
+def find_or_create(prs, area, space, ctx):
+    for slide in prs.slides:
+        if slide_is_space(slide) and _norm(get_meta(slide).get("space", "")) == _norm(space):
+            return slide
+    slide = clone_space_slide(prs, layout_for(area, space))
+    _replace_text_everywhere(slide, {
+        "ROHL-0002": ctx.get("rohl", ""),
+        "Regenta, Jamshedpur": f"{ctx.get('hotel','')}, {ctx.get('city','')}".strip(", "),
+        "Jamshedpur": ctx.get("city", ""),
+    })
+    t = _title_shape(slide)
+    if t is not None:
+        _set_text(t, f"04 · {space}")
+    sub = _subtitle_shape(slide)
+    if sub is not None:
+        loc = f"{ctx.get('hotel','')}, {ctx.get('city','')}".strip(", ")
+        _set_text(sub, f"{area or area_of_space(space)}   ·   {loc}")
+    set_meta(slide, area=area or area_of_space(space), space=space)
+    return slide
 
-def find_space_slide(prs, space_value, variant=None):
-    sv = (space_value or "").strip().lower()
-    mapped = SPACE_MAP.get(sv)
-    if mapped:
-        key, map_variant = mapped
-    else:
-        key, map_variant = sv, None      # fall back to matching the raw text
-    variant = variant or map_variant     # explicit room-type wins, else the mapped one
-    matches = [(i, s) for i, s in enumerate(prs.slides)
-               if _title(s) and key in _txt(_title(s)).lower()]
-    if not matches:
-        return None                      # space has no deck slide (media still saved)
-    base_idx, base = matches[0]
-    if not variant:
-        return base
-    for i, s in matches:
-        sub = _subtitle(s)
-        if (sub and variant.lower() in _txt(sub).lower()) or variant.lower() in _txt(_title(s)).lower():
-            return s
-    return clone_variant(prs, base_idx, variant)
-
-# ---- public entry point -------------------------------------------------------
-
-def apply_submission(prs, sub):
-    """sub keys: space, variant?, photo?, render?, videos?{}, feedback?, date?"""
-    slide = find_space_slide(prs, sub["space"], sub.get("variant"))
-    if slide is None:
-        raise ValueError(f"No slide for space {sub['space']!r}")
+# ---- public entry point ------------------------------------------------------
+def apply_submission(prs, sub, context=None):
+    ctx = context or {}
+    space = sub.get("space", "").strip()
+    area = sub.get("area", "").strip() or area_of_space(space)
+    month_key = sub.get("month") or ""
+    if not space:
+        raise ValueError("submission has no space")
+    strip_empty_space_slides(prs)
+    slide = find_or_create(prs, area, space, ctx)
     cols = find_columns(slide)
     if sub.get("render"):
         set_render(slide, cols, sub["render"])
-    if sub.get("photo"):
-        set_current_photo(slide, cols, sub["photo"])
+    if sub.get("photo") and "CUR" in cols:
+        set_current_photo(slide, cols, sub["photo"], month_key)
     if sub.get("videos"):
         set_videos(slide, sub["videos"])
     if sub.get("feedback"):
         set_feedback(slide, sub["feedback"])
     if sub.get("date"):
         set_footer(slide, sub["date"])
+    reorder_space_slides(prs)
     return slide

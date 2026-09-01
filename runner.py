@@ -16,7 +16,7 @@ ENV (set as GitHub Action secrets):
   INBOX_FOLDER     - WorkDrive id of the "_inbox" folder
   PROCESSED_FOLDER - WorkDrive id of a "_processed" folder (audit trail)
 """
-import io, os, json, tempfile, traceback, requests
+import io, os, re, json, tempfile, traceback, requests
 from pptx import Presentation
 import builder as B
 
@@ -127,9 +127,12 @@ def process(t, rec_file, live, processed):
         return False
 
     deck_path = save_tmp(download(t, deck_id), ".pptx")
+    m = re.search(r"ROHL-\d+", deck_name or "", re.I)
+    ctx = {"rohl": (m.group(0) if m else rohl), "hotel": hotel, "city": city}
     sub = {
+        "area": rec.get("area", ""),
         "space": rec.get("space", ""),
-        "variant": rec.get("variant") or None,
+        "month": rec.get("month", ""),
         "videos": rec.get("videos", {}) or {},
         "feedback": rec.get("feedback", ""),
         "date": rec.get("date", ""),
@@ -140,7 +143,7 @@ def process(t, rec_file, live, processed):
         sub["render"] = save_tmp(download(t, rec["renderFileId"]), ".jpg")
 
     prs = Presentation(deck_path)
-    B.apply_submission(prs, sub)
+    B.apply_submission(prs, sub, context=ctx)
     out = deck_path + ".out.pptx"
     prs.save(out)
     with open(out, "rb") as f:
