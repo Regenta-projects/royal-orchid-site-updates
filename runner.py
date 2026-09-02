@@ -135,17 +135,19 @@ def process(t, rec_file, live, processed):
         "month": rec.get("month", ""),
         "videos": rec.get("videos", {}) or {},
         "feedback": rec.get("feedback", ""),
+        "completion": rec.get("completion", ""),
         "date": rec.get("date", ""),
     }
-    if rec.get("photoFileId"):
-        sub["photo"] = save_tmp(download(t, rec["photoFileId"]), ".jpg")
+    photo_ids = rec.get("photoFileIds") or ([rec["photoFileId"]] if rec.get("photoFileId") else [])
+    if photo_ids:
+        sub["photos"] = [save_tmp(download(t, pid), ".jpg") for pid in photo_ids if pid]
     if rec.get("renderFileId"):
         sub["render"] = save_tmp(download(t, rec["renderFileId"]), ".jpg")
 
     prs = Presentation(deck_path)
     B.apply_submission(prs, sub, context=ctx)
     out = deck_path + ".out.pptx"
-    prs.save(out)
+    B.save_clean(prs, out)   # save + strip orphaned parts so PowerPoint won't flag "repair"
     with open(out, "rb") as f:
         upload_version(t, live, deck_name, f.read(),
                        "application/vnd.openxmlformats-officedocument.presentationml.presentation")
