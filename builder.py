@@ -84,6 +84,7 @@ def _cx(sh):
     return sh.left + sh.width / 2
 
 def _set_text(sh, txt, hyperlink=None):
+    txt = (txt or "").replace("\r\n", "\n").replace("\r", "\n").replace("_x000D_", "")
     p = sh.text_frame.paragraphs[0]
     if p.runs:
         r = p.runs[0]; r.text = txt
