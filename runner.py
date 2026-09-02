@@ -79,23 +79,6 @@ def upload_version(t, parent_id, name, data, ctype):
     r.raise_for_status()
     return r.json()
 
-def ensure_external_link(t, file_id, link_name):
-    """Turn on 'anyone with the link -> view' for a deck so its View-Deck link
-    always resolves — even right after we upload a new version. role_id 6 = view.
-    The /links endpoint is JSON:API, so Accept MUST be application/vnd.api+json.
-    Safe to call every time: if a link already exists Zoho just returns it."""
-    try:
-        requests.post(f"{WD}/links",
-            headers={"Authorization": f"Zoho-oauthtoken {t}",
-                     "Accept": "application/vnd.api+json",
-                     "Content-Type": "application/json"},
-            json={"data": {"type": "links", "attributes": {
-                "resource_id": file_id, "link_name": (link_name or ("view-"+file_id))[:40],
-                "role_id": "6", "request_user_data": False, "allow_download": True}}},
-            timeout=30)
-    except Exception as e:
-        print("  (link refresh skipped:", e, ")")
-
 def move_file(t, file_id, new_parent):
     try:
         requests.patch(f"{WD}/files/{file_id}",
@@ -168,8 +151,9 @@ def process(t, rec_file, live, processed):
     with open(out, "rb") as f:
         upload_version(t, live, deck_name, f.read(),
                        "application/vnd.openxmlformats-officedocument.presentationml.presentation")
-    # keep the deck's "anyone with link – view" URL alive after the new version
-    ensure_external_link(t, deck_id, ctx["rohl"] + "-deck")
+    # NOTE: the deck keeps its SAME file id + its "anyone with link" share across
+    # version uploads, so the View-Deck link in the sheet stays valid — nothing to
+    # re-share here.
     print(f"  ✓ updated {deck_name}  ({rec.get('space')}{' / ' + rec['variant'] if rec.get('variant') else ''})")
     if processed:
         move_file(t, rec_file["id"], processed)
