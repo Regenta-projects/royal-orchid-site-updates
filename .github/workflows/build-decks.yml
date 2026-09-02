@@ -1,11 +1,16 @@
 # .github/workflows/build-decks.yml
-# Runs the deck Builder every 10 minutes (and on-demand) from the company repo.
+# Runs the deck Builder from the company repo:
+#   - every 5 minutes as a safety net
+#   - the instant the form is submitted (repository_dispatch from Cloudflare)
+#   - by hand from the Actions tab
 name: Build site-update decks
 
 on:
   schedule:
-    - cron: "*/10 * * * *"      # every 10 minutes
-  workflow_dispatch:            # lets you run it by hand from the Actions tab
+    - cron: "*/5 * * * *"        # safety net: every 5 minutes
+  repository_dispatch:           # instant: Cloudflare pings this the moment a form is submitted
+    types: [site-update]
+  workflow_dispatch:             # lets you run it by hand from the Actions tab
 
 # never let two runs overlap
 concurrency:
