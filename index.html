@@ -6,1156 +6,508 @@
 <title>Site Update — Royal Orchid Hotels</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+:root{
+  --burg:#6B1729; --burg-d:#4A0F1B; --burg-l:#8C2238;
+  --gold:#C8962C; --gold-l:#E8B84B; --gold-soft:#efdca9;
+  --cream:#FAF6F0; --cream-d:#F0E8DE; --white:#fff;
+  --ink:#1C1009; --muted:#8a7a70; --border:#e4d8ca;
+  --ok:#2e7d52;
+  --shadow:0 4px 24px rgba(107,23,41,.08);
+  --radius:16px;
+  --fh:'Playfair Display',Georgia,serif;
+  --fb:'Jost',-apple-system,'Segoe UI',sans-serif;
+}
+body{font-family:var(--fb);background:var(--cream);color:var(--ink);min-height:100vh;padding-bottom:118px;-webkit-font-smoothing:antialiased}
 
-:root {
-  --burg:    #6B1729;
-  --burg-d:  #4A0F1B;
-  --burg-l:  #8C2238;
-  --gold:    #C8962C;
-  --gold-l:  #E8B84B;
-  --cream:   #FAF6F0;
-  --cream-d: #F0E8DE;
-  --white:   #FFFFFF;
-  --ink:     #1C1009;
-  --muted:   #7A6A5A;
-  --border:  #DDD0C0;
-  --shadow:  0 2px 16px rgba(107,23,41,0.08);
-  --radius:  14px;
-  --font-h:  'Cormorant Garamond', serif;
-  --font-b:  'DM Sans', sans-serif;
-}
+/* progress bar */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;background:linear-gradient(90deg,var(--gold),var(--gold-l));z-index:300;transition:width .35s ease}
 
-body {
-  font-family: var(--font-b);
-  background: var(--cream);
-  color: var(--ink);
-  min-height: 100vh;
-  padding-bottom: 120px;
-}
+/* header */
+.header{background:linear-gradient(140deg,var(--burg-d) 0%,var(--burg) 65%,var(--burg-l) 100%);
+  padding:16px 18px 15px;position:sticky;top:0;z-index:100;border-bottom:2px solid var(--gold);
+  box-shadow:0 3px 20px rgba(74,15,27,.3)}
+.header-in{max-width:520px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:12px;min-height:46px}
+.logo-img{height:42px;width:auto;display:block}
+.logo-fallback{display:flex;flex-direction:column;align-items:center;line-height:1}
+.logo-fallback .lf1{font-family:var(--fh);font-size:22px;font-weight:700;color:var(--gold-l);letter-spacing:.5px}
+.logo-fallback .lf2{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.6);margin-top:3px}
+.header .tagline{text-align:center;color:rgba(255,255,255,.62);font-size:10px;letter-spacing:2.5px;text-transform:uppercase;margin-top:9px}
 
-/* ── Header */
-.header {
-  background: var(--burg-d);
-  padding: 20px 20px 16px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 3px solid var(--gold);
-}
-.header-inner {
-  max-width: 480px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.logo-block { display: flex; flex-direction: column; gap: 2px; }
-.logo-name {
-  font-family: var(--font-h);
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--gold-l);
-  letter-spacing: 0.5px;
-  line-height: 1;
-}
-.logo-sub {
-  font-size: 10px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.55);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-.save-badge {
-  font-size: 11px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.7);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-.save-badge.visible { opacity: 1; }
-.save-dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: var(--gold-l);
-  animation: pulse 1.4s infinite;
-}
-.save-dot.saved { background: #5cb85c; animation: none; }
-@keyframes pulse {
-  0%,100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
-}
+/* container */
+.container{max-width:520px;margin:0 auto;padding:16px 15px 0}
 
-/* ── Container */
-.container { max-width: 480px; margin: 0 auto; padding: 20px 16px 0; }
+/* locked hotel banner */
+.hotelcard{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 20px 18px;
+  margin-bottom:16px;position:relative;overflow:hidden;border:1px solid var(--cream-d)}
+.hotelcard::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--gold),var(--gold-soft))}
+.hotelcard .eyebrow{display:flex;align-items:center;gap:6px;font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:8px}
+.hotelcard h1{font-family:var(--fh);font-size:25px;line-height:1.12;color:var(--burg);font-weight:700}
+.hotelcard .loc{margin-top:7px;color:var(--muted);font-size:14px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.hotelcard .badge{margin-left:auto;background:var(--burg);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:7px;letter-spacing:.5px}
+.lockrow{display:flex;align-items:center;gap:6px;margin-top:13px;padding-top:12px;border-top:1px dashed var(--cream-d);font-size:11.5px;color:var(--muted)}
+.lockrow svg{width:13px;height:13px;fill:var(--gold)}
 
-/* ── Section Card */
-.card {
-  background: var(--white);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  padding: 20px;
-  margin-bottom: 14px;
-  border: 1px solid var(--cream-d);
-}
-.section-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.section-num {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: var(--burg);
-  color: var(--white);
-  font-size: 12px;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.section-title {
-  font-family: var(--font-h);
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--burg-d);
-  letter-spacing: 0.2px;
-}
+/* cards */
+.card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:19px;margin-bottom:14px;border:1px solid var(--cream-d);
+  opacity:0;transform:translateY(8px);animation:rise .45s ease forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+.card:nth-child(2){animation-delay:.04s}.card:nth-child(3){animation-delay:.08s}.card:nth-child(4){animation-delay:.12s}
+.card:nth-child(5){animation-delay:.16s}.card:nth-child(6){animation-delay:.2s}.card:nth-child(7){animation-delay:.24s}
+.sec-label{display:flex;align-items:center;gap:11px;margin-bottom:16px}
+.sec-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--burg),var(--burg-l));color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex:none;box-shadow:0 2px 8px rgba(107,23,41,.25)}
+.sec-title{font-family:var(--fh);font-size:18px;font-weight:600;color:var(--burg-d)}
 
-/* ── Fields */
-.field { margin-bottom: 14px; }
-.field:last-child { margin-bottom: 0; }
-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--muted);
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-label .req { color: var(--gold); margin-left: 2px; }
+/* fields */
+.field{margin-bottom:14px}.field:last-child{margin-bottom:0}
+label{display:block;font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.7px;text-transform:uppercase;margin-bottom:6px}
+label .req{color:var(--gold);margin-left:2px}
+select,input[type=text],input[type=number],input[type=date],textarea{
+  width:100%;font-family:var(--fb);font-size:15px;color:var(--ink);background:var(--cream);
+  border:1.5px solid var(--border);border-radius:11px;padding:12px 14px;outline:none;
+  transition:border-color .2s,box-shadow .2s,background .2s;-webkit-appearance:none;appearance:none}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C8962C' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+select:focus,input:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(200,150,44,.13);background:#fff}
+textarea{resize:none;min-height:96px;line-height:1.5}
 
-select, input[type="text"], input[type="number"],
-input[type="date"], textarea {
-  width: 100%;
-  font-family: var(--font-b);
-  font-size: 15px;
-  font-weight: 400;
-  color: var(--ink);
-  background: var(--cream);
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  padding: 12px 14px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  -webkit-appearance: none;
-  appearance: none;
-}
-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23C8962C' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 14px center;
-  padding-right: 36px;
-}
-select:focus, input:focus, textarea:focus {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(200,150,44,0.12);
-  background: var(--white);
-}
-select:disabled, input:disabled { opacity: 0.6; cursor: not-allowed; }
-textarea { resize: none; min-height: 100px; line-height: 1.5; }
+.slider-row{display:flex;align-items:center;gap:12px}
+.slider-row input[type=range]{flex:1;height:6px;border-radius:3px;background:var(--cream-d);outline:none;padding:0;cursor:pointer;-webkit-appearance:none;
+  background-image:linear-gradient(var(--gold),var(--gold));background-repeat:no-repeat}
+.slider-row input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--burg);border:3px solid #fff;box-shadow:0 2px 6px rgba(107,23,41,.3);cursor:pointer}
+.pct-input{width:66px!important;text-align:center;font-weight:600;font-size:16px!important}
+.pct-symbol{font-size:15px;font-weight:600;color:var(--burg)}
+.date-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.divider{height:1px;background:var(--cream-d);margin:14px 0}
 
-/* ── Completion Slider */
-.slider-row { display: flex; align-items: center; gap: 12px; }
-.slider-row input[type="range"] {
-  flex: 1; height: 6px; border-radius: 3px;
-  background: var(--cream-d); border: none; outline: none; padding: 0;
-  cursor: pointer; -webkit-appearance: none;
-}
-.slider-row input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 22px; height: 22px; border-radius: 50%;
-  background: var(--burg);
-  border: 3px solid var(--white);
-  box-shadow: 0 2px 6px rgba(107,23,41,0.3);
-  cursor: pointer;
-}
-.pct-input { width: 68px !important; text-align: center; font-weight: 600; font-size: 16px !important; }
-.pct-symbol { font-size: 15px; font-weight: 600; color: var(--burg); flex-shrink: 0; }
+/* media buttons */
+.media-btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+.media-btn{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 10px;border-radius:12px;border:2px solid var(--border);background:var(--cream);cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.media-btn:hover{border-color:var(--gold);background:rgba(200,150,44,.06);transform:translateY(-1px);box-shadow:0 4px 14px rgba(200,150,44,.13)}
+.media-btn:active{transform:scale(.97)}
+.media-btn .ic{font-size:26px;line-height:1}
+.media-btn .lb{font-size:12px;font-weight:600;color:var(--burg)}
+.media-btn .hn{font-size:10px;color:var(--muted)}
+.media-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.media-btn.cam{border-color:rgba(107,23,41,.25);background:linear-gradient(135deg,rgba(107,23,41,.045),rgba(200,150,44,.045))}
+.media-btn.cam:hover{border-color:var(--burg)}
+.preview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.preview-item{position:relative;border-radius:9px;overflow:hidden;aspect-ratio:1;background:var(--cream-d)}
+.preview-item img{width:100%;height:100%;object-fit:cover}
+.preview-item .rm{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:12px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.filechip{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--cream);border-radius:9px;margin-top:8px;border:1px solid var(--border)}
+.filechip .fi{font-size:19px}.filechip .in{flex:1;min-width:0}
+.filechip .fn{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.filechip .fs{font-size:11px;color:var(--muted)}
+.filechip .rm{background:none;border:none;font-size:16px;cursor:pointer;color:var(--muted);padding:4px}
+.upbox{border:2px dashed var(--border);border-radius:12px;padding:18px 14px;text-align:center;cursor:pointer;transition:all .18s;position:relative;overflow:hidden}
+.upbox:hover{border-color:var(--gold);background:rgba(200,150,44,.04)}
+.upbox input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upbox .ic{font-size:26px;margin-bottom:6px}.upbox .lb{font-size:13px;font-weight:500;color:var(--muted)}.upbox .hn{font-size:11px;color:#b3a390;margin-top:3px}
 
-/* ── Date Row */
-.date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* action bar */
+.action-bar{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--cream-d);padding:13px 15px;z-index:100;box-shadow:0 -4px 22px rgba(107,23,41,.08)}
+.action-in{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:7px}
+.btn-submit{width:100%;padding:16px;background:linear-gradient(135deg,var(--burg),var(--burg-l));color:#fff;border:none;border-radius:13px;font-family:var(--fb);font-size:16px;font-weight:600;letter-spacing:.3px;cursor:pointer;transition:filter .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-submit:hover{filter:brightness(1.08)}.btn-submit:active{transform:scale(.98)}.btn-submit:disabled{opacity:.55;cursor:not-allowed}
+.hint{text-align:center;font-size:11px;color:var(--muted)}
 
-/* ── Hotel Info Row */
-.hotel-info-row {
-  display: flex; gap: 8px; align-items: center;
-  padding: 10px 14px;
-  background: linear-gradient(135deg, rgba(107,23,41,0.06), rgba(200,150,44,0.06));
-  border-radius: 10px;
-  border: 1px solid rgba(200,150,44,0.2);
-  margin-top: 6px;
-}
-.hotel-info-name { font-size: 14px; font-weight: 600; color: var(--burg); }
-.hotel-info-city { font-size: 12px; color: var(--muted); }
-.hotel-badge {
-  margin-left: auto; font-size: 11px; font-weight: 600;
-  background: var(--burg); color: var(--white);
-  padding: 3px 8px; border-radius: 6px;
-}
+/* loading + success */
+#loading{position:fixed;inset:0;background:var(--burg-d);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:14px}
+#loading .lg{font-family:var(--fh);font-size:30px;color:var(--gold-l);font-weight:700;letter-spacing:1px}
+#loading .sp{width:30px;height:30px;border:3px solid rgba(200,150,44,.3);border-top-color:var(--gold-l);border-radius:50%;animation:spin .8s linear infinite;margin-top:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#success{display:none;position:fixed;inset:0;background:var(--cream);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;gap:15px}
+#success.show{display:flex}
+.suc-ring{width:88px;height:88px;border-radius:50%;background:radial-gradient(circle,#fff,var(--cream-d));display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 8px 30px rgba(46,125,82,.18);animation:pop .5s cubic-bezier(.2,1.3,.4,1)}
+@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.suc-t{font-family:var(--fh);font-size:27px;font-weight:700;color:var(--burg-d)}
+.suc-s{font-size:14.5px;color:var(--muted);max-width:300px;line-height:1.55}
+.btn-another{padding:13px 26px;background:transparent;color:var(--burg);border:2px solid var(--burg);border-radius:12px;font-family:var(--fb);font-size:14px;font-weight:600;cursor:pointer;margin-top:4px}
 
-/* ── File Upload */
-.upload-box {
-  border: 2px dashed var(--border);
-  border-radius: 12px;
-  padding: 18px 14px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
-  position: relative;
-  overflow: hidden;
-}
-.upload-box:hover, .upload-box.drag-over {
-  border-color: var(--gold);
-  background: rgba(200,150,44,0.04);
-}
-.upload-box input[type="file"] {
-  position: absolute; inset: 0;
-  opacity: 0; cursor: pointer;
-  width: 100%; height: 100%;
-  background: transparent; border: none; padding: 0;
-}
-.upload-icon { font-size: 28px; margin-bottom: 6px; }
-.upload-label { font-size: 13px; font-weight: 500; color: var(--muted); }
-.upload-hint { font-size: 11px; color: #B0A090; margin-top: 3px; }
+/* no-hotel gate */
+#gate{display:none;max-width:520px;margin:40px auto;padding:0 18px;text-align:center}
+#gate.show{display:block}
+.gate-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:30px 24px}
+.gate-card .gi{font-size:42px}
+.gate-card h2{font-family:var(--fh);color:var(--burg);font-size:22px;margin:10px 0 8px}
+.gate-card p{color:var(--muted);font-size:14px;line-height:1.55;margin-bottom:18px}
 
-/* ── Dual Media Buttons */
-.media-btn-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 8px;
-}
-.media-btn {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 16px 10px;
-  border-radius: 12px;
-  border: 2px solid var(--border);
-  background: var(--cream);
-  cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
-  overflow: hidden;
-  font-family: var(--font-b);
-}
-.media-btn:hover {
-  border-color: var(--gold);
-  background: rgba(200,150,44,0.06);
-  transform: translateY(-1px);
-  box-shadow: 0 3px 12px rgba(200,150,44,0.12);
-}
-.media-btn:active { transform: scale(0.97); }
-.media-btn .media-btn-icon {
-  font-size: 28px;
-  line-height: 1;
-}
-.media-btn .media-btn-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--burg);
-  letter-spacing: 0.3px;
-}
-.media-btn .media-btn-hint {
-  font-size: 10px;
-  color: var(--muted);
-}
-.media-btn input[type="file"] {
-  position: absolute; inset: 0;
-  opacity: 0; cursor: pointer;
-  width: 100%; height: 100%;
-  background: transparent; border: none; padding: 0;
-}
-.media-btn-camera {
-  border-color: rgba(107,23,41,0.25);
-  background: linear-gradient(135deg, rgba(107,23,41,0.04), rgba(200,150,44,0.04));
-}
-.media-btn-camera:hover {
-  border-color: var(--burg);
-  background: linear-gradient(135deg, rgba(107,23,41,0.08), rgba(200,150,44,0.08));
-}
-
-/* Preview grid */
-.preview-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-top: 10px;
-}
-.preview-item {
-  position: relative; border-radius: 8px; overflow: hidden;
-  aspect-ratio: 1; background: var(--cream-d);
-}
-.preview-item img { width: 100%; height: 100%; object-fit: cover; }
-.preview-item .remove-btn {
-  position: absolute; top: 4px; right: 4px;
-  width: 20px; height: 20px; border-radius: 50%;
-  background: rgba(0,0,0,0.6); color: white;
-  font-size: 12px; border: none; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-}
-.preview-item .progress-overlay {
-  position: absolute; inset: 0;
-  background: rgba(107,23,41,0.7);
-  display: flex; align-items: center; justify-content: center;
-  color: white; font-size: 12px; font-weight: 600;
-}
-
-.video-preview {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; background: var(--cream);
-  border-radius: 8px; margin-top: 8px;
-  border: 1px solid var(--border);
-}
-.video-preview .file-icon { font-size: 20px; flex-shrink: 0; }
-.video-preview .file-info { flex: 1; min-width: 0; }
-.video-preview .file-name {
-  font-size: 13px; font-weight: 500;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.video-preview .file-status { font-size: 11px; color: var(--muted); }
-.video-preview .remove-btn {
-  background: none; border: none; font-size: 16px;
-  cursor: pointer; color: var(--muted); padding: 4px;
-}
-
-/* ── Rendering preview */
-.render-file-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 12px; background: var(--cream);
-  border-radius: 8px; margin-top: 6px;
-  border: 1px solid var(--border);
-}
-.render-file-item .file-icon { font-size: 18px; flex-shrink: 0; }
-.render-file-item .file-info { flex: 1; min-width: 0; }
-.render-file-item .file-name {
-  font-size: 12px; font-weight: 500;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.render-file-item .file-size { font-size: 10px; color: var(--muted); }
-.render-file-item .remove-btn {
-  background: none; border: none; font-size: 14px;
-  cursor: pointer; color: var(--muted); padding: 4px;
-}
-
-.divider { height: 1px; background: var(--cream-d); margin: 12px 0; }
-
-/* ── Bottom Action Bar */
-.action-bar {
-  position: fixed; bottom: 0; left: 0; right: 0;
-  background: var(--white);
-  border-top: 1px solid var(--cream-d);
-  padding: 14px 16px;
-  z-index: 100;
-  box-shadow: 0 -4px 20px rgba(107,23,41,0.08);
-}
-.action-bar-inner {
-  max-width: 480px; margin: 0 auto;
-  display: flex; flex-direction: column; gap: 8px;
-}
-.btn-submit {
-  width: 100%; padding: 16px;
-  background: var(--burg); color: var(--white);
-  border: none; border-radius: 12px;
-  font-family: var(--font-b); font-size: 16px; font-weight: 600;
-  letter-spacing: 0.3px; cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.btn-submit:hover { background: var(--burg-l); }
-.btn-submit:active { transform: scale(0.98); }
-.btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
-.draft-status { text-align: center; font-size: 11px; color: var(--muted); }
-
-/* ── Loading Screen */
-#loading-screen {
-  position: fixed; inset: 0;
-  background: var(--burg-d);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  z-index: 999; gap: 16px;
-}
-.loading-logo {
-  font-family: var(--font-h); font-size: 32px;
-  color: var(--gold-l); font-weight: 600; letter-spacing: 1px;
-}
-.loading-sub {
-  font-size: 11px; letter-spacing: 3px; text-transform: uppercase;
-  color: rgba(255,255,255,0.4);
-}
-.loading-spinner {
-  width: 32px; height: 32px;
-  border: 3px solid rgba(200,150,44,0.3);
-  border-top-color: var(--gold-l);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-top: 8px;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* ── Success Screen */
-#success-screen {
-  display: none; position: fixed; inset: 0;
-  background: var(--cream); z-index: 500;
-  flex-direction: column; align-items: center;
-  justify-content: center; padding: 32px;
-  text-align: center; gap: 16px;
-}
-#success-screen.show { display: flex; }
-.success-icon { font-size: 64px; }
-.success-title {
-  font-family: var(--font-h); font-size: 28px;
-  font-weight: 600; color: var(--burg-d);
-}
-.success-sub { font-size: 15px; color: var(--muted); max-width: 280px; line-height: 1.5; }
-.btn-ppt-link {
-  padding: 14px 28px; background: var(--gold); color: var(--white);
-  border: none; border-radius: 12px; font-family: var(--font-b);
-  font-size: 15px; font-weight: 600; cursor: pointer;
-  text-decoration: none; display: inline-flex;
-  align-items: center; gap: 8px; margin-top: 8px;
-}
-.btn-another {
-  padding: 12px 24px; background: transparent;
-  color: var(--burg); border: 2px solid var(--burg);
-  border-radius: 12px; font-family: var(--font-b);
-  font-size: 14px; font-weight: 600; cursor: pointer;
-}
-
-/* ── Toast */
-.toast {
-  position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
-  background: var(--ink); color: var(--white);
-  padding: 10px 18px; border-radius: 24px;
-  font-size: 13px; font-weight: 500; z-index: 200;
-  opacity: 0; transition: opacity 0.3s;
-  white-space: nowrap; pointer-events: none;
-}
-.toast.show { opacity: 1; }
-
-/* ── Draft Restore Banner */
-.restore-banner {
-  background: linear-gradient(135deg, var(--burg) 0%, var(--burg-l) 100%);
-  color: var(--white); padding: 14px 16px;
-  border-radius: var(--radius); margin-bottom: 14px;
-  display: none;
-}
-.restore-banner.show { display: block; }
-.restore-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-.restore-sub { font-size: 12px; opacity: 0.8; }
-.restore-actions { display: flex; gap: 8px; margin-top: 10px; }
-.restore-btn {
-  padding: 7px 14px; border-radius: 8px;
-  font-family: var(--font-b); font-size: 12px;
-  font-weight: 600; cursor: pointer; border: none;
-}
-.restore-yes { background: var(--white); color: var(--burg); }
-.restore-no  { background: rgba(255,255,255,0.2); color: var(--white); }
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 20px;border-radius:24px;font-size:13px;font-weight:500;z-index:600;opacity:0;transition:opacity .3s;white-space:nowrap;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
 </style>
 </head>
 <body>
-
-<!-- Loading Screen -->
-<div id="loading-screen">
-  <div class="loading-logo">Royal Orchid</div>
-  <div class="loading-sub">Hotels &amp; Resorts</div>
-  <div class="loading-spinner"></div>
-</div>
-
-<!-- Toast -->
+<div id="progress"></div>
+<div id="loading"><div class="lg">Royal Orchid</div><div class="sp"></div></div>
 <div class="toast" id="toast"></div>
 
-<!-- Header -->
 <header class="header">
-  <div class="header-inner">
-    <div class="logo-block">
-      <div class="logo-name">Royal Orchid</div>
-      <div class="logo-sub">Site Update Form</div>
-    </div>
-    <div class="save-badge" id="save-badge">
-      <div class="save-dot" id="save-dot"></div>
-      <span id="save-text">Saving…</span>
+  <div class="header-in">
+    <!-- Upload your brand file to the repo as logo.png and it appears here automatically -->
+    <img src="logo.png" alt="Royal Orchid | Regenta Hotels" class="logo-img"
+         onerror="this.style.display='none';document.getElementById('logoFallback').style.display='flex'">
+    <div class="logo-fallback" id="logoFallback" style="display:none">
+      <div class="lf1">Royal Orchid <span style="opacity:.5">|</span> Regenta</div>
     </div>
   </div>
+  <div class="tagline">Site Update Form</div>
 </header>
 
-<!-- Main Form -->
-<div class="container" id="main-form" style="display:none">
+<!-- gate shown when opened WITHOUT a hotel link -->
+<div id="gate">
+  <div class="gate-card">
+    <div class="gi">🔗</div>
+    <h2>Open your hotel's own link</h2>
+    <p>Please submit updates using the Site Update link shared in <b>your hotel's WhatsApp group</b>. Each hotel has its own link so your update always reaches the right property.</p>
+    <select id="gate-picker" onchange="if(this.value)location.search='?id='+this.value" style="max-width:340px;margin:0 auto"></select>
+    <p style="font-size:11px;margin-top:12px;margin-bottom:0">(The picker above is for the projects team only.)</p>
+  </div>
+</div>
 
-  <!-- Draft Restore Banner -->
-  <div class="restore-banner" id="restore-banner">
-    <div class="restore-title">📋 Unfinished form found</div>
-    <div class="restore-sub" id="restore-sub">You have a saved draft. Restore it?</div>
-    <div class="restore-actions">
-      <button class="restore-btn restore-yes" onclick="restoreDraft()">Yes, restore</button>
-      <button class="restore-btn restore-no" onclick="dismissDraft()">Start fresh</button>
+<!-- main form -->
+<div class="container" id="mainform" style="display:none">
+  <div class="hotelcard">
+    <div class="eyebrow">● Submitting for</div>
+    <div style="display:flex;align-items:flex-start;gap:8px">
+      <h1 id="h-name">—</h1>
+      <span class="badge" id="h-id">—</span>
+    </div>
+    <div class="loc">📍 <span id="h-loc">—</span></div>
+    <div class="lockrow">
+      <svg viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v9a2 2 0 002 2h12a2 2 0 002-2v-9a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm3 8H9V6a3 3 0 016 0v3z"/></svg>
+      This form is locked to your property — you don't need to select a hotel.
     </div>
   </div>
 
-  <!-- Section 1: Hotel -->
   <div class="card">
-    <div class="section-label">
-      <div class="section-num">1</div>
-      <div class="section-title">Select Your Hotel</div>
-    </div>
-    <div class="field">
-      <label>Hotel Name <span class="req">*</span></label>
-      <select id="hotel-select" onchange="onHotelChange()">
-        <option value="">— Select Hotel —</option>
-      </select>
-    </div>
-    <div class="hotel-info-row" id="hotel-info" style="display:none">
-      <div>
-        <div class="hotel-info-name" id="hotel-info-name"></div>
-        <div class="hotel-info-city" id="hotel-info-city"></div>
-      </div>
-      <div class="hotel-badge">Selected</div>
-    </div>
-  </div>
-
-  <!-- Section 2: Area & Space -->
-  <div class="card">
-    <div class="section-label">
-      <div class="section-num">2</div>
-      <div class="section-title">Area &amp; Space</div>
-    </div>
-    <div class="field">
-      <label>Area <span class="req">*</span></label>
+    <div class="sec-label"><div class="sec-num">1</div><div class="sec-title">Area &amp; Space</div></div>
+    <div class="field"><label>Area <span class="req">*</span></label>
       <select id="area-select" onchange="onAreaChange()">
         <option value="">— Select Area —</option>
-        <option>External &amp; Facade</option>
-        <option>Public Areas</option>
-        <option>Guest Rooms &amp; Suites</option>
-        <option>F&amp;B Support</option>
-        <option>Wellness &amp; Recreation</option>
-        <option>Back of House</option>
-        <option>Administrative</option>
-        <option>Service &amp; Technical</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Space <span class="req">*</span></label>
-      <select id="space-select">
-        <option value="">— Select Area first —</option>
-      </select>
-    </div>
+        <option>External &amp; Facade</option><option>Public Areas</option>
+        <option>Guest Rooms &amp; Suites</option><option>F&amp;B Support</option>
+        <option>Wellness &amp; Recreation</option><option>Back of House</option>
+        <option>Administrative</option><option>Service &amp; Technical</option>
+      </select></div>
+    <div class="field"><label>Space <span class="req">*</span></label>
+      <select id="space-select"><option value="">— Select Area first —</option></select></div>
+    <div class="field" id="variant-wrap" style="display:none"><label>Room / Unit Type <span class="req">*</span></label>
+      <input type="text" id="variant-input" placeholder="e.g. Suite, Studio, Deluxe King"></div>
   </div>
 
-  <!-- Section 3: Work Status -->
   <div class="card">
-    <div class="section-label">
-      <div class="section-num">3</div>
-      <div class="section-title">Work Status</div>
-    </div>
-    <div class="field">
-      <label>Stage <span class="req">*</span></label>
+    <div class="sec-label"><div class="sec-num">2</div><div class="sec-title">Work Status</div></div>
+    <div class="field"><label>Stage <span class="req">*</span></label>
       <select id="stage-select">
         <option value="">— Select Stage —</option>
-        <option>Design &amp; Planning</option>
-        <option>Demolition / Dismantling</option>
-        <option>Civil &amp; Masonry Work</option>
-        <option>Waterproofing</option>
-        <option>MEP Rough-in (Electrical / Plumbing)</option>
-        <option>False Ceiling &amp; Partition Work</option>
-        <option>Flooring</option>
-        <option>Wall Finishes &amp; Painting</option>
-        <option>Furniture &amp; Fixture Installation</option>
-        <option>FF&amp;E &amp; Soft Furnishing</option>
-        <option>Punch List / Snagging</option>
-        <option>Completed / Handed Over</option>
-      </select>
-    </div>
-    <div class="field">
-      <label>Completion %</label>
+        <option>Design &amp; Planning</option><option>Demolition / Dismantling</option>
+        <option>Civil &amp; Masonry Work</option><option>Waterproofing</option>
+        <option>MEP Rough-in (Electrical / Plumbing)</option><option>False Ceiling &amp; Partition Work</option>
+        <option>Flooring</option><option>Wall Finishes &amp; Painting</option>
+        <option>Furniture &amp; Fixture Installation</option><option>FF&amp;E &amp; Soft Furnishing</option>
+        <option>Punch List / Snagging</option><option>Completed / Handed Over</option>
+      </select></div>
+    <div class="field"><label>Completion %</label>
       <div class="slider-row">
-        <input type="range" id="pct-slider" min="0" max="100" step="5" value="0"
-               oninput="syncPct('slider')">
-        <input type="number" id="pct-input" class="pct-input" min="0" max="100" value="0"
-               oninput="syncPct('input')">
+        <input type="range" id="pct-slider" min="0" max="100" step="5" value="0" oninput="syncPct('slider')">
+        <input type="number" id="pct-input" class="pct-input" min="0" max="100" value="0" oninput="syncPct('input')">
         <span class="pct-symbol">%</span>
-      </div>
-    </div>
+      </div></div>
   </div>
 
-  <!-- Section 4: Timeline -->
   <div class="card">
-    <div class="section-label">
-      <div class="section-num">4</div>
-      <div class="section-title">Timeline</div>
-    </div>
+    <div class="sec-label"><div class="sec-num">3</div><div class="sec-title">Timeline</div></div>
     <div class="date-row">
-      <div class="field">
-        <label>Start Date</label>
-        <input type="date" id="start-date">
-      </div>
-      <div class="field">
-        <label>End Date</label>
-        <input type="date" id="end-date">
-      </div>
+      <div class="field"><label>Start Date</label><input type="date" id="start-date"></div>
+      <div class="field"><label>Target End</label><input type="date" id="end-date"></div>
     </div>
   </div>
 
-  <!-- Section 5: Media -->
   <div class="card">
-    <div class="section-label">
-      <div class="section-num">5</div>
-      <div class="section-title">Photos &amp; Media</div>
-    </div>
-    <div class="field">
-      <label>Site Photos</label>
+    <div class="sec-label"><div class="sec-num">4</div><div class="sec-title">Photos &amp; Media</div></div>
+    <div class="field"><label>Site Photos</label>
       <div class="media-btn-row">
-        <div class="media-btn media-btn-camera">
-          <input type="file" id="photos-camera" accept="image/*" capture="environment" multiple
-                 onchange="handlePhotosFrom(this)">
-          <div class="media-btn-icon">📷</div>
-          <div class="media-btn-label">Take Photo</div>
-          <div class="media-btn-hint">Open camera</div>
-        </div>
-        <div class="media-btn">
-          <input type="file" id="photos-gallery" accept="image/*" multiple
-                 onchange="handlePhotosFrom(this)">
-          <div class="media-btn-icon">🖼️</div>
-          <div class="media-btn-label">Upload Photos</div>
-          <div class="media-btn-hint">Choose from gallery</div>
-        </div>
+        <div class="media-btn cam"><input type="file" accept="image/*" capture="environment" multiple onchange="handlePhotos(this)"><div class="ic">📷</div><div class="lb">Take Photo</div><div class="hn">Open camera</div></div>
+        <div class="media-btn"><input type="file" accept="image/*" multiple onchange="handlePhotos(this)"><div class="ic">🖼️</div><div class="lb">Upload Photos</div><div class="hn">From gallery</div></div>
       </div>
       <div class="preview-grid" id="photos-preview"></div>
     </div>
     <div class="divider"></div>
-    <div class="field">
-      <label>Site Video</label>
+    <div class="field"><label>Site Video</label>
       <div class="media-btn-row">
-        <div class="media-btn media-btn-camera">
-          <input type="file" id="video-camera" accept="video/*" capture="environment"
-                 onchange="handleVideoFrom(this)">
-          <div class="media-btn-icon">🎥</div>
-          <div class="media-btn-label">Record Video</div>
-          <div class="media-btn-hint">Open camera</div>
-        </div>
-        <div class="media-btn">
-          <input type="file" id="video-gallery" accept="video/*"
-                 onchange="handleVideoFrom(this)">
-          <div class="media-btn-icon">📁</div>
-          <div class="media-btn-label">Upload Video</div>
-          <div class="media-btn-hint">Choose file · max 50 MB</div>
-        </div>
+        <div class="media-btn cam"><input type="file" accept="video/*" capture="environment" onchange="handleVideo(this)"><div class="ic">🎥</div><div class="lb">Record Video</div><div class="hn">Open camera</div></div>
+        <div class="media-btn"><input type="file" accept="video/*" onchange="handleVideo(this)"><div class="ic">📁</div><div class="lb">Upload Video</div><div class="hn">Max 40 MB</div></div>
       </div>
       <div id="video-preview"></div>
     </div>
   </div>
 
-  <!-- Section 6: Renderings -->
   <div class="card">
-    <div class="section-label">
-      <div class="section-num">6</div>
-      <div class="section-title">Renderings &amp; Documents</div>
-    </div>
-    <div class="field">
-      <label>Upload Renderings / Drawings / Plans</label>
-      <div class="upload-box" id="renders-box">
-        <input type="file" id="renders-input" multiple accept="image/*,.pdf,.dwg"
-               onchange="handleRenderings()">
-        <div class="upload-icon">📐</div>
-        <div class="upload-label">Tap to add renderings or documents</div>
-        <div class="upload-hint">Images, PDF, DWG · multiple allowed</div>
-      </div>
-      <div class="preview-grid" id="renders-preview-images"></div>
-      <div id="renders-preview-files"></div>
+    <div class="sec-label"><div class="sec-num">5</div><div class="sec-title">Renderings &amp; Drawings</div></div>
+    <div class="field"><label>Renderings / Drawings / Plans</label>
+      <div class="upbox"><input type="file" multiple accept="image/*,.pdf,.dwg" onchange="handleRenders(this)"><div class="ic">📐</div><div class="lb">Tap to add renderings or documents</div><div class="hn">Images, PDF, DWG · multiple allowed</div></div>
+      <div class="preview-grid" id="renders-img"></div>
+      <div id="renders-files"></div>
     </div>
   </div>
 
-  <!-- Section 7: Remarks -->
   <div class="card">
-    <div class="section-label">
-      <div class="section-num">7</div>
-      <div class="section-title">Remarks &amp; Issues</div>
-    </div>
-    <div class="field">
-      <label>Notes / Feedback / Issues</label>
-      <textarea id="remarks" placeholder="Describe current progress, any issues, delays, or next steps…"></textarea>
-    </div>
+    <div class="sec-label"><div class="sec-num">6</div><div class="sec-title">Remarks &amp; Issues</div></div>
+    <div class="field"><label>Notes / Feedback / Issues</label>
+      <textarea id="remarks" placeholder="Describe current progress, any issues, delays, or next steps…"></textarea></div>
   </div>
 </div>
 
-<!-- Success Screen -->
-<div id="success-screen">
-  <div class="success-icon">✅</div>
-  <div class="success-title">Update Submitted!</div>
-  <div class="success-sub" id="success-sub">Your site update has been saved successfully.</div>
-  <a id="ppt-link" class="btn-ppt-link" href="#" target="_blank" style="display:none">📊 View Presentation</a>
-  <button class="btn-another" onclick="resetForm()">Submit Another Area</button>
+<div id="success">
+  <div class="suc-ring">✓</div>
+  <div class="suc-t">Update Submitted</div>
+  <div class="suc-s" id="suc-sub">Your site update has been received. The presentation will refresh automatically in about a minute.</div>
+  <button class="btn-another" onclick="resetForm()">Submit Another Space</button>
 </div>
 
-<!-- Action Bar -->
 <div class="action-bar" id="action-bar" style="display:none">
-  <div class="action-bar-inner">
-    <button class="btn-submit" id="submit-btn" onclick="submitForm()">
-      Submit Site Update ↑
-    </button>
-    <div class="draft-status" id="draft-status">Fill in at least Hotel, Area, and Stage to submit</div>
+  <div class="action-in">
+    <button class="btn-submit" id="submit-btn" onclick="submitForm()">Submit Site Update ↑</button>
+    <div class="hint" id="hint">Fill in Area, Space and Stage to submit</div>
   </div>
 </div>
 
 <script>
-// ════════════════════════════════════════════════
-//  CONFIG
-// ════════════════════════════════════════════════
+// ==== CONFIG ====
 const WORKER_URL = "https://royal-orchid-catcher.piproyaorchidhotels.workers.dev";
-const MAX_IMG_DIM = 1280;
-const IMG_QUALITY = 0.7;
+const MAX_IMG_DIM = 1280, IMG_QUALITY = 0.7, MAX_VIDEO_MB = 40;
 
-// ── Area → Spaces mapping
-const SPACES = {
-  "External & Facade": [
-    "Main Entrance / Porch","Building Exterior","Parking Area",
-    "Garden / Landscaping","Driveway","Boundary Wall","Signage & Branding"
-  ],
-  "Public Areas": [
-    "Lobby","Reception / Front Desk","Waiting Lounge",
-    "Corridors (Ground Floor)","Corridors (Upper Floors)",
-    "Elevators","Staircase","Public Restrooms","Luggage Area"
-  ],
-  "Guest Rooms & Suites": [
-    "Standard Room","Deluxe Room","Premium Room",
-    "Junior Suite","Suite","Bathroom / Toilet","Balcony / Terrace"
-  ],
-  "F&B Support": [
-    "Restaurant (All Day Dining)","Bar & Lounge","Banquet Hall",
-    "Pre-Function Area","Kitchen","Room Service Area","Staff Cafeteria"
-  ],
-  "Wellness & Recreation": [
-    "Swimming Pool","Pool Deck","Gym / Fitness Center",
-    "Spa Reception","Spa Treatment Rooms","Steam & Sauna","Kids Play Area"
-  ],
-  "Back of House": [
-    "Laundry","Housekeeping Store","Staff Locker Room",
-    "General Storage","Loading Bay","Linen Room"
-  ],
-  "Administrative": [
-    "Front Office","General Manager Office","HR Room",
-    "Meeting / Training Room","Finance Office"
-  ],
-  "Service & Technical": [
-    "Main Electrical Room","Sub-Electrical Panels",
-    "Plumbing / Water Treatment","HVAC / Chiller Plant",
-    "Generator Room","Fire Safety Systems","CCTV / Security Room"
-  ],
-};
-
-// ── All 52 hotels
-const HOTELS_DATA = [
-  {name:"Regenta Inn",city:"Tezpur",state:"Assam"},
-  {name:"Regenta Place",city:"Bhadohi",state:"Uttar Pradesh"},
-  {name:"Regenta",city:"Jamshedpur",state:"Jharkhand"},
-  {name:"Regenta Z",city:"Patna",state:"Bihar"},
-  {name:"Regenta",city:"Lucknow",state:"Uttar Pradesh"},
-  {name:"Regenta",city:"Varanasi",state:"Uttar Pradesh"},
-  {name:"Regenta",city:"Nepal",state:"Nepal"},
-  {name:"Regenta Place",city:"Rishikesh",state:"Uttarakhand"},
-  {name:"Regenta",city:"Gurgaon Sector 70",state:"Haryana"},
-  {name:"Regenta",city:"Mussoorie",state:"Uttarakhand"},
-  {name:"Regenta Place",city:"Mall Road, Mussoorie",state:"Uttarakhand"},
-  {name:"Regenta place",city:"Jim corbett",state:"Uttarakhand"},
-  {name:"Regenta Place",city:"Vrindavan",state:"Uttar Pradesh"},
-  {name:"Hotel",city:"ORAI",state:"Uttar Pradesh"},
-  {name:"Regenta Resort",city:"Pushkar",state:"Rajasthan"},
-  {name:"Crestoria",city:"Bhopal",state:"Madhya Pradesh"},
-  {name:"Regenta Resort",city:"Chittorgarh",state:"Rajasthan"},
-  {name:"Regenta",city:"Bhopal Airport",state:"Madhya Pradesh"},
-  {name:"Regenta",city:"Jabalpur",state:"Madhya Pradesh"},
-  {name:"Regenta",city:"Gwalior",state:"Madhya Pradesh"},
-  {name:"Crestoria",city:"Jodhpur",state:"Rajasthan"},
-  {name:"Regenta Place",city:"Udaipur",state:"Rajasthan"},
-  {name:"Regenta Suites & Residences",city:"Jaipur",state:"Rajasthan"},
-  {name:"Regenta Place",city:"Baddi",state:"Himachal Pradesh"},
-  {name:"Regenta Z",city:"Ambala",state:"Haryana"},
-  {name:"Regenta",city:"Ambala",state:"Haryana"},
-  {name:"Regenta Z",city:"Amritsar",state:"Punjab"},
-  {name:"Regenta Place",city:"Bathinda",state:"Punjab"},
-  {name:"Regenta",city:"Amritsar",state:"Punjab"},
-  {name:"Regenta Inn",city:"Dhule",state:"Maharashtra"},
-  {name:"Regenta",city:"Nanded",state:"Maharashtra"},
-  {name:"Regenta Resort",city:"Mulshi, Pune",state:"Maharashtra"},
-  {name:"Regenta Resort",city:"Panchgani",state:"Maharashtra"},
-  {name:"Regenta Z",city:"Mahabaleshwar",state:"Maharashtra"},
-  {name:"Regenta Residences",city:"Trimbakeshwar",state:"Maharashtra"},
-  {name:"Regenta Place",city:"Omerga",state:"Maharashtra"},
-  {name:"Regenta Resort",city:"Gir",state:"Gujarat"},
-  {name:"Regenta",city:"Rajkot",state:"Gujarat"},
-  {name:"Regenta Resort",city:"Bhavnagar",state:"Gujarat"},
-  {name:"Regenta INN ANJAR",city:"Anjar",state:"Gujarat"},
-  {name:"Regenta Place",city:"Rajkot- Greenland Chowkdi",state:"Gujarat"},
-  {name:"Regenta",city:"Mundra",state:"Gujarat"},
-  {name:"Regenta Resort",city:"Saputara",state:"Gujarat"},
-  {name:"Regenta",city:"Tirupati",state:"Andhra Pradesh"},
-  {name:"Regenta Z",city:"Vijayawada",state:"Andhra Pradesh"},
-  {name:"Regenta Resort",city:"Kushal Nagar, Coorg",state:"Karnataka"},
-  {name:"Regenta Z",city:"Kondapur, Gachibowli",state:"Hyderabad"},
-  {name:"Regenta",city:"Dodamarg",state:"Goa"},
-  {name:"Crestoria",city:"Fenicia",state:"Goa"},
-  {name:"Regenta Baga Resort",city:"Baga Resort",state:"Goa"},
-  {name:"Shack Project",city:"Goa",state:"Goa"},
-  {name:"Royal orchid Galaxy & Spa",city:"Beach Resort Goa",state:"Goa"},
+// ==== HOTELS (49, from Master Project Data) ====
+const HOTELS = [
+  {id:"ROHL-0001", name:"Regenta Inn / Z", city:"Tezpur", state:"Assam"},
+  {id:"ROHL-0002", name:"Regenta", city:"Jamshedpur", state:"Jharkhand"},
+  {id:"ROHL-0003", name:"Regenta", city:"Mussoorie", state:"Uttarakhand"},
+  {id:"ROHL-0004", name:"Regenta Place", city:"Mall Road, Mussoorie", state:"Uttarakhand"},
+  {id:"ROHL-0005", name:"Regenta Place", city:"Jim Corbett", state:"Uttarakhand"},
+  {id:"ROHL-0006", name:"Regenta Z", city:"Orai", state:"Uttar Pradesh"},
+  {id:"ROHL-0007", name:"Regenta Resort", city:"Pushkar", state:"Rajasthan"},
+  {id:"ROHL-0008", name:"Crestoria", city:"Bhopal", state:"Madhya Pradesh"},
+  {id:"ROHL-0009", name:"Regenta Resort", city:"Chittorgarh", state:"Rajasthan"},
+  {id:"ROHL-0010", name:"Regenta", city:"Bhopal Airport", state:"Madhya Pradesh"},
+  {id:"ROHL-0011", name:"Regenta", city:"Jabalpur", state:"Madhya Pradesh"},
+  {id:"ROHL-0012", name:"Regenta", city:"Gwalior", state:"Madhya Pradesh"},
+  {id:"ROHL-0013", name:"Crestoria", city:"Jodhpur", state:"Rajasthan"},
+  {id:"ROHL-0014", name:"Regenta Place", city:"Udaipur", state:"Rajasthan"},
+  {id:"ROHL-0015", name:"Regenta Suites & Residences", city:"Jaipur", state:"Rajasthan"},
+  {id:"ROHL-0016", name:"Regenta Place, Aerodrome Circle", city:"Kota", state:"Rajasthan"},
+  {id:"ROHL-0017", name:"Regenta Kota", city:"Kota", state:"Rajasthan"},
+  {id:"ROHL-0018", name:"Regenta Resort Kota", city:"Kota", state:"Rajasthan"},
+  {id:"ROHL-0019", name:"Regenta Place", city:"Baddi", state:"Himachal Pradesh"},
+  {id:"ROHL-0020", name:"Regenta Z", city:"Ambala", state:"Haryana"},
+  {id:"ROHL-0021", name:"Regenta", city:"Ambala", state:"Haryana"},
+  {id:"ROHL-0022", name:"Regenta Place", city:"Bhadohi", state:"Uttar Pradesh"},
+  {id:"ROHL-0023", name:"Regenta Place", city:"Vrindavan", state:"Uttar Pradesh"},
+  {id:"ROHL-0024", name:"Regenta Z", city:"Mathura", state:"Uttar Pradesh"},
+  {id:"ROHL-0025", name:"Regenta", city:"Varanasi", state:"Uttar Pradesh"},
+  {id:"ROHL-0026", name:"Regenta", city:"Bathinda", state:"Punjab"},
+  {id:"ROHL-0027", name:"Regenta Z", city:"Vijayawada", state:"Andhra Pradesh"},
+  {id:"ROHL-0028", name:"Regenta Resort", city:"Kushal Nagar, Coorg", state:"Karnataka"},
+  {id:"ROHL-0029", name:"Regenta Z", city:"Visakhapatnam", state:"Andhra Pradesh"},
+  {id:"ROHL-0030", name:"Regenta Royal Ritis", city:"Hubballi", state:"Karnataka"},
+  {id:"ROHL-0031", name:"Regenta", city:"Vellore", state:"Tamil Nadu"},
+  {id:"ROHL-0032", name:"Regenta Place / Z by Regenta", city:"Kadapa", state:"Andhra Pradesh"},
+  {id:"ROHL-0033", name:"Regenta Inn / Z", city:"Dhule", state:"Maharashtra"},
+  {id:"ROHL-0034", name:"Regenta", city:"Nanded", state:"Maharashtra"},
+  {id:"ROHL-0035", name:"Regenta Resort", city:"Mulshi, Pune", state:"Maharashtra"},
+  {id:"ROHL-0036", name:"Regenta Resort", city:"Panchgani", state:"Maharashtra"},
+  {id:"ROHL-0037", name:"Regenta Z", city:"Mahabaleshwar", state:"Maharashtra"},
+  {id:"ROHL-0038", name:"Regenta Residences", city:"Trimbakeshwar", state:"Maharashtra"},
+  {id:"ROHL-0039", name:"Regenta Place", city:"Omerga", state:"Maharashtra"},
+  {id:"ROHL-0040", name:"Regenta Z", city:"Ichalkaranji", state:"Maharashtra"},
+  {id:"ROHL-0041", name:"Regenta Place", city:"Sangli", state:"Maharashtra"},
+  {id:"ROHL-0042", name:"Regenta Resort", city:"Sasan Gir", state:"Gujarat"},
+  {id:"ROHL-0043", name:"Regenta", city:"Rajkot", state:"Gujarat"},
+  {id:"ROHL-0044", name:"Regenta Resort", city:"Bhavnagar", state:"Gujarat"},
+  {id:"ROHL-0045", name:"Regenta Inn", city:"Anjar", state:"Gujarat"},
+  {id:"ROHL-0046", name:"Regenta Place", city:"Rajkot – Greenland Chowkdi", state:"Gujarat"},
+  {id:"ROHL-0047", name:"Regenta", city:"Mundra", state:"Gujarat"},
+  {id:"ROHL-0048", name:"Regenta Resort", city:"Saputara", state:"Gujarat"},
+  {id:"ROHL-0049", name:"Regenta Place", city:"Nana Chiloda", state:"Gujarat"}
 ];
 
-// ── State
-let hotels = HOTELS_DATA;
-let currentHotel = null;
-let pendingDraft = null;
-let selectedPhotos = [];
-let selectedVideo = null;
-let saveTimer = null;
+const SPACES = {
+  "External & Facade":["Main Entrance / Porch","Building Exterior","Parking Area","Garden / Landscaping","Driveway","Boundary Wall","Signage & Branding"],
+  "Public Areas":["Lobby","Reception / Front Desk","Waiting Lounge","Corridors (Ground Floor)","Corridors (Upper Floors)","Elevators","Staircase","Public Restrooms","Luggage Area"],
+  "Guest Rooms & Suites":["Standard Room","Deluxe Room","Premium Room","Junior Suite","Suite","Bathroom / Toilet","Balcony / Terrace"],
+  "F&B Support":["Restaurant (All Day Dining)","Bar & Lounge","Banquet Hall","Pre-Function Area","Kitchen","Room Service Area","Staff Cafeteria"],
+  "Wellness & Recreation":["Swimming Pool","Pool Deck","Gym / Fitness Center","Spa Reception","Spa Treatment Rooms","Steam & Sauna","Kids Play Area"],
+  "Back of House":["Laundry","Housekeeping Store","Staff Locker Room","General Storage","Loading Bay","Linen Room"],
+  "Administrative":["Front Office","General Manager Office","HR Room","Meeting / Training Room","Finance Office"],
+  "Service & Technical":["Main Electrical Room","Sub-Electrical Panels","Plumbing / Water Treatment","HVAC / Chiller Plant","Generator Room","Fire Safety Systems","CCTV / Security Room"]
+};
+// spaces that need a room/unit type entered
+const VARIANT_AREAS = new Set(["Guest Rooms & Suites"]);
 
-// ── Init
-window.addEventListener("DOMContentLoaded", () => {
-  populateHotelDropdown();
-  document.getElementById("loading-screen").style.display = "none";
-  document.getElementById("main-form").style.display = "block";
-  document.getElementById("action-bar").style.display = "block";
+let currentHotel=null, selectedPhotos=[], selectedVideo=null, selectedRenders=[];
 
-  // Pre-select hotel from URL param
-  const urlHotel = new URLSearchParams(location.search).get("hotel");
-  if (urlHotel) {
-    const idx = hotels.findIndex(h => 
-      `${h.name} — ${h.city}`.toLowerCase() === urlHotel.toLowerCase() ||
-      h.name.toLowerCase() === urlHotel.toLowerCase() ||
-      String(hotels.indexOf(h)) === urlHotel
-    );
-    if (idx >= 0) {
-      document.getElementById("hotel-select").value = idx;
-      onHotelChange();
-    }
+// ==== init ====
+window.addEventListener("DOMContentLoaded", ()=>{
+  document.getElementById("loading").style.display="none";
+  const id=(qp("id")||qp("projectId")||qp("rohl")||"").trim().toUpperCase();
+  let h=null;
+  if(id) h=HOTELS.find(x=>x.id.toUpperCase()===id);
+  if(!h){ // fallback: try hotel+city match if only those were passed
+    const hn=(qp("hotel")||"").trim().toLowerCase(), cy=(qp("city")||"").trim().toLowerCase();
+    if(cy) h=HOTELS.find(x=>x.city.toLowerCase()===cy);
+    if(!h && hn) h=HOTELS.find(x=>x.name.toLowerCase()===hn && (!cy||x.city.toLowerCase()===cy));
   }
+  if(h){ lockToHotel(h); }
+  else { showGate(); }
 });
 
-function populateHotelDropdown() {
-  const sel = document.getElementById("hotel-select");
-  hotels.forEach((h, i) => {
-    const opt = document.createElement("option");
-    opt.value = i;
-    opt.text = `${h.name}  —  ${h.city}`;
-    sel.appendChild(opt);
+function qp(n){ return new URLSearchParams(location.search).get(n); }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+function lockToHotel(h){
+  currentHotel=h;
+  document.getElementById("h-name").textContent=h.name;
+  document.getElementById("h-id").textContent=h.id;
+  document.getElementById("h-loc").textContent=h.city+(h.state?" · "+h.state:"");
+  document.getElementById("mainform").style.display="block";
+  document.getElementById("action-bar").style.display="block";
+}
+function showGate(){
+  const sel=document.getElementById("gate-picker");
+  sel.innerHTML='<option value="">— Projects team: choose a hotel —</option>'+
+    HOTELS.map(h=>`<option value="${esc(h.id)}">${esc(h.id)} — ${esc(h.name)}, ${esc(h.city)}</option>`).join("");
+  document.getElementById("gate").classList.add("show");
+}
+
+// ==== cascade ====
+function onAreaChange(){
+  const area=document.getElementById("area-select").value;
+  const sel=document.getElementById("space-select");
+  sel.innerHTML='<option value="">— Select Space —</option>';
+  (SPACES[area]||[]).forEach(s=>{ const o=document.createElement("option"); o.value=o.text=s; sel.appendChild(o); });
+  document.getElementById("variant-wrap").style.display = VARIANT_AREAS.has(area)?"block":"none";
+  updateProgress();
+}
+function syncPct(src){
+  const sl=document.getElementById("pct-slider"), ip=document.getElementById("pct-input");
+  if(src==="slider") ip.value=sl.value;
+  else{ let v=parseInt(ip.value,10); if(isNaN(v))v=0; v=Math.max(0,Math.min(100,v)); ip.value=v; sl.value=v; }
+  sl.style.backgroundSize=sl.value+"% 100%";
+}
+
+// ==== progress ====
+function updateProgress(){
+  const need=["area-select","space-select","stage-select"];
+  let done=need.filter(id=>document.getElementById(id).value).length;
+  const media=selectedPhotos.length||selectedVideo||selectedRenders.length?1:0;
+  const pct=Math.round(((done+media)/(need.length+1))*100);
+  document.getElementById("progress").style.width=pct+"%";
+  document.getElementById("hint").textContent = done<3 ? "Fill in Area, Space and Stage to submit" : "Ready to submit ✓";
+}
+document.addEventListener("change",e=>{ if(["area-select","space-select","stage-select"].includes(e.target.id)) updateProgress(); });
+
+// ==== image resize ====
+function resizeImage(file){
+  return new Promise(res=>{
+    const rd=new FileReader();
+    rd.onload=e=>{ const img=new Image(); img.onload=()=>{
+      let w=img.width,h=img.height;
+      if(w>MAX_IMG_DIM||h>MAX_IMG_DIM){ if(w>h){h=Math.round(h*MAX_IMG_DIM/w);w=MAX_IMG_DIM;} else {w=Math.round(w*MAX_IMG_DIM/h);h=MAX_IMG_DIM;} }
+      const c=document.createElement("canvas"); c.width=w;c.height=h; c.getContext("2d").drawImage(img,0,0,w,h);
+      c.toBlob(b=>res(new File([b],file.name.replace(/\.[^.]+$/,".jpg"),{type:"image/jpeg"})),"image/jpeg",IMG_QUALITY);
+    }; img.src=e.target.result; };
+    rd.readAsDataURL(file);
+  });
+}
+async function handlePhotos(inp){ for(const f of Array.from(inp.files)){ selectedPhotos.push(await resizeImage(f)); } renderPhotos(); inp.value=""; updateProgress(); }
+function renderPhotos(){
+  const g=document.getElementById("photos-preview"); g.innerHTML="";
+  selectedPhotos.forEach((f,i)=>{ const d=document.createElement("div"); d.className="preview-item";
+    const im=document.createElement("img"); im.src=URL.createObjectURL(f);
+    const b=document.createElement("button"); b.className="rm"; b.textContent="×"; b.type="button"; b.onclick=()=>{selectedPhotos.splice(i,1);renderPhotos();updateProgress();};
+    d.append(im,b); g.appendChild(d); });
+}
+function handleVideo(inp){
+  const f=inp.files[0]; if(!f) return;
+  if(f.size>MAX_VIDEO_MB*1024*1024){ showToast("Video must be under "+MAX_VIDEO_MB+" MB"); inp.value=""; return; }
+  selectedVideo=f;
+  document.getElementById("video-preview").innerHTML=`<div class="filechip"><div class="fi">🎬</div><div class="in"><div class="fn">${esc(f.name)}</div><div class="fs">Ready · ${(f.size/1048576).toFixed(1)} MB</div></div><button class="rm" type="button" onclick="removeVideo()">×</button></div>`;
+  inp.value=""; updateProgress();
+}
+function removeVideo(){ selectedVideo=null; document.getElementById("video-preview").innerHTML=""; updateProgress(); }
+function handleRenders(inp){ for(const f of Array.from(inp.files)) selectedRenders.push(f); renderRenders(); inp.value=""; updateProgress(); }
+function renderRenders(){
+  const ig=document.getElementById("renders-img"), fl=document.getElementById("renders-files"); ig.innerHTML="";fl.innerHTML="";
+  selectedRenders.forEach((f,i)=>{
+    if(f.type.startsWith("image/")){ const d=document.createElement("div"); d.className="preview-item";
+      const im=document.createElement("img"); im.src=URL.createObjectURL(f);
+      const b=document.createElement("button"); b.className="rm"; b.textContent="×"; b.type="button"; b.onclick=()=>{selectedRenders.splice(i,1);renderRenders();};
+      d.append(im,b); ig.appendChild(d);
+    } else { const kb=(f.size/1024).toFixed(0); const icon=f.name.toLowerCase().endsWith(".pdf")?"📄":"📐";
+      const w=document.createElement("div"); w.className="filechip"; w.innerHTML=`<div class="fi">${icon}</div><div class="in"><div class="fn">${esc(f.name)}</div><div class="fs">${kb} KB</div></div><button class="rm" type="button">×</button>`;
+      w.querySelector(".rm").onclick=()=>{selectedRenders.splice(i,1);renderRenders();}; fl.appendChild(w); }
   });
 }
 
-// ── Hotel Selection
-function onHotelChange() {
-  const idx = document.getElementById("hotel-select").value;
-  if (idx === "") {
-    currentHotel = null;
-    document.getElementById("hotel-info").style.display = "none";
-    return;
-  }
-  currentHotel = hotels[parseInt(idx)];
-  document.getElementById("hotel-info-name").textContent = currentHotel.name;
-  document.getElementById("hotel-info-city").textContent = `${currentHotel.city}  ·  ${currentHotel.state}`;
-  document.getElementById("hotel-info").style.display = "flex";
-}
+// ==== submit ====
+async function submitForm(){
+  if(!currentHotel){ showToast("No hotel selected"); return; }
+  const area=document.getElementById("area-select").value;
+  const space=document.getElementById("space-select").value;
+  const stage=document.getElementById("stage-select").value;
+  const variant=document.getElementById("variant-input")?document.getElementById("variant-input").value.trim():"";
+  if(!area){showToast("Please select an area");return;}
+  if(!space){showToast("Please select a space");return;}
+  if(VARIANT_AREAS.has(area)&&!variant){showToast("Please enter the room / unit type");return;}
+  if(!stage){showToast("Please select a stage");return;}
 
-// ── Area → Space Cascade
-function onAreaChange() {
-  const area = document.getElementById("area-select").value;
-  const sel = document.getElementById("space-select");
-  sel.innerHTML = '<option value="">— Select Space —</option>';
-  if (area && SPACES[area]) {
-    SPACES[area].forEach(s => {
-      const o = document.createElement("option");
-      o.value = o.text = s;
-      sel.appendChild(o);
-    });
-  }
-}
-
-// ── Completion % sync
-function syncPct(source) {
-  const slider = document.getElementById("pct-slider");
-  const input = document.getElementById("pct-input");
-  if (source === "slider") {
-    input.value = slider.value;
-  } else {
-    let v = parseInt(input.value, 10);
-    if (isNaN(v)) v = 0;
-    v = Math.max(0, Math.min(100, v));
-    input.value = v;
-    slider.value = v;
-  }
-}
-
-// ── Image Resize
-function resizeImage(file) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        let w = img.width, h = img.height;
-        if (w > MAX_IMG_DIM || h > MAX_IMG_DIM) {
-          if (w > h) { h = Math.round(h * MAX_IMG_DIM / w); w = MAX_IMG_DIM; }
-          else { w = Math.round(w * MAX_IMG_DIM / h); h = MAX_IMG_DIM; }
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = w; canvas.height = h;
-        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-        canvas.toBlob((blob) => {
-          resolve(new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
-        }, 'image/jpeg', IMG_QUALITY);
-      };
-      img.src = e.target.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-// ── Photo Handling
-function renderPhotoPreviews() {
-  const grid = document.getElementById("photos-preview");
-  grid.innerHTML = "";
-  selectedPhotos.forEach((file, i) => {
-    const div = document.createElement("div");
-    div.className = "preview-item";
-    const img = document.createElement("img");
-    img.src = URL.createObjectURL(file);
-    const btn = document.createElement("button");
-    btn.className = "remove-btn"; btn.textContent = "×"; btn.type = "button";
-    btn.onclick = () => { selectedPhotos.splice(i, 1); renderPhotoPreviews(); };
-    div.append(img, btn);
-    grid.appendChild(div);
-  });
-}
-
-async function handlePhotosFrom(inputEl) {
-  const files = Array.from(inputEl.files);
-  for (const f of files) {
-    const resized = await resizeImage(f);
-    selectedPhotos.push(resized);
-  }
-  renderPhotoPreviews();
-  inputEl.value = "";
-}
-
-// ── Video Handling
-function handleVideoFrom(inputEl) {
-  const file = inputEl.files[0];
-  if (!file) return;
-  if (file.size > 50 * 1024 * 1024) {
-    showToast("Video must be under 50 MB");
-    inputEl.value = "";
-    return;
-  }
-  selectedVideo = file;
-  document.getElementById("video-preview").innerHTML = `
-    <div class="video-preview">
-      <div class="file-icon">🎬</div>
-      <div class="file-info">
-        <div class="file-name">${file.name}</div>
-        <div class="file-status">Ready to upload · ${(file.size/1024/1024).toFixed(1)} MB</div>
-      </div>
-      <button class="remove-btn" type="button" onclick="removeVideo()">×</button>
-    </div>`;
-  inputEl.value = "";
-}
-
-function removeVideo() {
-  selectedVideo = null;
-  document.getElementById("video-preview").innerHTML = "";
-}
-
-// ── Rendering Handling
-let selectedRenderings = [];
-
-function handleRenderings() {
-  const input = document.getElementById("renders-input");
-  const files = Array.from(input.files);
-  for (const f of files) {
-    selectedRenderings.push(f);
-  }
-  renderRenderingPreviews();
-  input.value = "";
-}
-
-function renderRenderingPreviews() {
-  const imgGrid = document.getElementById("renders-preview-images");
-  const fileList = document.getElementById("renders-preview-files");
-  imgGrid.innerHTML = "";
-  fileList.innerHTML = "";
-  
-  selectedRenderings.forEach((file, i) => {
-    if (file.type.startsWith('image/')) {
-      const div = document.createElement("div");
-      div.className = "preview-item";
-      const img = document.createElement("img");
-      img.src = URL.createObjectURL(file);
-      const btn = document.createElement("button");
-      btn.className = "remove-btn"; btn.textContent = "×"; btn.type = "button";
-      btn.onclick = () => { selectedRenderings.splice(i, 1); renderRenderingPreviews(); };
-      div.append(img, btn);
-      imgGrid.appendChild(div);
-    } else {
-      const sizeKB = (file.size / 1024).toFixed(0);
-      const icon = file.name.endsWith('.pdf') ? '📄' : '📐';
-      fileList.innerHTML += `
-        <div class="render-file-item">
-          <div class="file-icon">${icon}</div>
-          <div class="file-info">
-            <div class="file-name">${file.name}</div>
-            <div class="file-size">${sizeKB} KB</div>
-          </div>
-          <button class="remove-btn" type="button" onclick="selectedRenderings.splice(${i},1);renderRenderingPreviews()">×</button>
-        </div>`;
-    }
-  });
-}
-
-// ── Draft save/restore (local storage)
-function saveDraftLocal() {
-  if (!currentHotel) return;
-  const key = `draft_${currentHotel.name}_${currentHotel.city}`;
-  const data = {
-    area: document.getElementById("area-select").value,
-    space: document.getElementById("space-select").value,
-    stage: document.getElementById("stage-select").value,
-    pct: document.getElementById("pct-input").value,
-    startDate: document.getElementById("start-date").value,
-    endDate: document.getElementById("end-date").value,
-    remarks: document.getElementById("remarks").value,
-    _ts: new Date().toISOString()
-  };
-  try { localStorage.setItem(key, JSON.stringify(data)); } catch {}
-}
-
-function restoreDraft() {
-  if (!pendingDraft) return;
-  const d = pendingDraft;
-  document.getElementById("restore-banner").classList.remove("show");
-  if (d.area) { document.getElementById("area-select").value = d.area; onAreaChange(); if (d.space) document.getElementById("space-select").value = d.space; }
-  if (d.stage) document.getElementById("stage-select").value = d.stage;
-  if (d.pct !== undefined) { document.getElementById("pct-input").value = d.pct; document.getElementById("pct-slider").value = d.pct; }
-  if (d.startDate) document.getElementById("start-date").value = d.startDate;
-  if (d.endDate) document.getElementById("end-date").value = d.endDate;
-  if (d.remarks) document.getElementById("remarks").value = d.remarks;
-  pendingDraft = null;
-  showToast("Draft restored ✓");
-}
-
-function dismissDraft() {
-  document.getElementById("restore-banner").classList.remove("show");
-  pendingDraft = null;
-}
-
-// Auto-save on changes
-["area-select","space-select","stage-select","start-date","end-date","remarks"]
-  .forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener("change", () => { clearTimeout(saveTimer); saveTimer = setTimeout(saveDraftLocal, 1500); });
-  });
-document.getElementById("remarks").addEventListener("input", () => { clearTimeout(saveTimer); saveTimer = setTimeout(saveDraftLocal, 1500); });
-
-// ── Submit
-async function submitForm() {
-  const idx = document.getElementById("hotel-select").value;
-  const area = document.getElementById("area-select").value;
-  const space = document.getElementById("space-select").value;
-  const stage = document.getElementById("stage-select").value;
-
-  if (idx === "") { showToast("Please select a hotel"); return; }
-  if (!area)      { showToast("Please select an area"); return; }
-  if (!space)     { showToast("Please select a space"); return; }
-  if (!stage)     { showToast("Please select a stage"); return; }
-
-  const btn = document.getElementById("submit-btn");
-  btn.disabled = true;
-  btn.innerHTML = `<div style="width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite"></div> Submitting…`;
-
-  const hotelObj = currentHotel || {};
-  const hotelKey = `${hotelObj.name} — ${hotelObj.city}`;
-
-  try {
-    const fd = new FormData();
-    fd.append("hotel", hotelObj.name || "");
-    fd.append("city", hotelObj.city || "");
-    fd.append("area", area);
-    fd.append("space", space);
-    fd.append("stage", stage);
-    fd.append("completion", document.getElementById("pct-input").value);
-    fd.append("startDate", document.getElementById("start-date").value);
-    fd.append("endDate", document.getElementById("end-date").value);
-    fd.append("remarks", document.getElementById("remarks").value);
-
-    for (const photo of selectedPhotos) fd.append("photos", photo);
-    if (selectedVideo) fd.append("video", selectedVideo);
-    for (const render of selectedRenderings) fd.append("renderings", render);
-
-    const r = await fetch(`${WORKER_URL}/submit`, { method: "POST", body: fd });
-    const d = await r.json();
-
-    if (!d.success) throw new Error(d.error || "Submit failed");
-
-    // Clear local draft
-    try { localStorage.removeItem(`draft_${hotelObj.name}_${hotelObj.city}`); } catch {}
-
-    document.getElementById("success-sub").textContent =
-      `Site update for ${hotelObj.name} — ${area} / ${space} has been saved.`;
-    document.getElementById("action-bar").style.display = "none";
-    document.getElementById("success-screen").classList.add("show");
-
-  } catch (e) {
-    btn.disabled = false;
-    btn.innerHTML = "Submit Site Update ↑";
-    showToast("⚠ Submission failed: " + e.message);
+  const btn=document.getElementById("submit-btn"); btn.disabled=true;
+  btn.innerHTML=`<div style="width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite"></div> Submitting…`;
+  try{
+    const fd=new FormData();
+    fd.append("projectId",currentHotel.id);           // reliable routing by ROHL id
+    fd.append("hotel",currentHotel.name);
+    fd.append("city",currentHotel.city);
+    fd.append("area",area);
+    fd.append("space",space);
+    if(variant) fd.append("roomType",variant);
+    fd.append("stage",stage);
+    fd.append("completion",document.getElementById("pct-input").value);
+    fd.append("startDate",document.getElementById("start-date").value);
+    fd.append("endDate",document.getElementById("end-date").value);
+    fd.append("remarks",document.getElementById("remarks").value);
+    for(const p of selectedPhotos) fd.append("photos",p);
+    if(selectedVideo) fd.append("video",selectedVideo);
+    for(const r of selectedRenders) fd.append("renderings",r);
+    const res=await fetch(`${WORKER_URL}/submit`,{method:"POST",body:fd});
+    const d=await res.json();
+    if(!d.success) throw new Error(d.error||"Submit failed");
+    document.getElementById("suc-sub").textContent=`${currentHotel.name}, ${currentHotel.city} — ${area} / ${space}${variant?" ("+variant+")":""} has been received. The presentation refreshes automatically in about a minute.`;
+    document.getElementById("action-bar").style.display="none";
+    document.getElementById("success").classList.add("show");
+    document.getElementById("progress").style.width="100%";
+  }catch(e){
+    btn.disabled=false; btn.innerHTML="Submit Site Update ↑";
+    showToast("⚠ "+e.message);
   }
 }
-
-function resetForm() {
-  document.getElementById("success-screen").classList.remove("show");
-  document.getElementById("action-bar").style.display = "block";
-  document.getElementById("area-select").value = "";
-  document.getElementById("space-select").innerHTML = '<option value="">— Select Area first —</option>';
-  document.getElementById("stage-select").value = "";
-  document.getElementById("pct-input").value = "0";
-  document.getElementById("pct-slider").value = "0";
-  document.getElementById("start-date").value = "";
-  document.getElementById("end-date").value = "";
-  document.getElementById("remarks").value = "";
-  document.getElementById("photos-preview").innerHTML = "";
-  document.getElementById("video-preview").innerHTML = "";
-  document.getElementById("renders-preview-images").innerHTML = "";
-  document.getElementById("renders-preview-files").innerHTML = "";
-  selectedPhotos = [];
-  selectedVideo = null;
-  selectedRenderings = [];
-  document.getElementById("submit-btn").disabled = false;
-  document.getElementById("submit-btn").innerHTML = "Submit Site Update ↑";
-  window.scrollTo(0, 0);
+function resetForm(){
+  document.getElementById("success").classList.remove("show");
+  document.getElementById("action-bar").style.display="block";
+  ["area-select","stage-select","start-date","end-date","remarks"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("space-select").innerHTML='<option value="">— Select Area first —</option>';
+  document.getElementById("variant-wrap").style.display="none";
+  if(document.getElementById("variant-input")) document.getElementById("variant-input").value="";
+  document.getElementById("pct-input").value="0"; document.getElementById("pct-slider").value="0"; syncPct("slider");
+  document.getElementById("photos-preview").innerHTML=""; document.getElementById("video-preview").innerHTML="";
+  document.getElementById("renders-img").innerHTML=""; document.getElementById("renders-files").innerHTML="";
+  selectedPhotos=[];selectedVideo=null;selectedRenders=[];
+  const b=document.getElementById("submit-btn"); b.disabled=false; b.innerHTML="Submit Site Update ↑";
+  updateProgress(); window.scrollTo(0,0);
 }
-
-// ── UI Helpers
-function showToast(msg) {
-  const el = document.getElementById("toast");
-  el.textContent = msg;
-  el.classList.add("show");
-  setTimeout(() => el.classList.remove("show"), 3000);
-}
+function showToast(m){ const t=document.getElementById("toast"); t.textContent=m; t.classList.add("show"); setTimeout(()=>t.classList.remove("show"),3000); }
 </script>
 </body>
 </html>
